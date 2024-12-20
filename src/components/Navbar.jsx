@@ -1,8 +1,8 @@
 import React from 'react';
-import { Layout, Menu, Button } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogoutOutlined, HomeOutlined } from '@ant-design/icons';
+import { LogoutOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
 
@@ -19,13 +19,20 @@ const Navbar = () => {
     }
   };
 
+  const menu = (
+    <Menu>
+      <Menu.Item key="account" onClick={() => navigate('/account')}>Quản lý tài khoản</Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout}>Đăng xuất</Menu.Item>
+    </Menu>
+  );
+
   const items = [
     {
       key: 'home',
-      icon: <HomeOutlined />,
+      icon: <HomeOutlined />, 
       label: 'Home',
-      onClick: () => navigate('/')
-    }
+      onClick: () => navigate('/'),
+    },
   ];
 
   return (
@@ -42,25 +49,18 @@ const Navbar = () => {
         alignItems: 'center',
         gap: '24px'
       }}>
-        <h1 style={{ margin: 0, fontSize: '20px', color: '#1890ff' }}>
-          CopyCheck
-        </h1>
-        <Menu 
-          mode="horizontal" 
-          items={items}
-          style={{ border: 'none' }}
-        />
+        <Link to="/" style={{ color: '#1890ff', textDecoration: 'none' }}>
+          <h1 style={{ margin: 0, fontSize: '20px', color: '#1890ff' }}>
+            CopyCheck
+          </h1>
+        </Link>
+        
       </div>
-      
       {currentUser && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span>{currentUser.email}</span>
-          <Button 
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          <Dropdown overlay={menu} trigger={['click']}>
+            <Avatar size="large" icon={<UserOutlined />} />
+          </Dropdown>
         </div>
       )}
     </Header>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Card, Button, Modal, Form, Input, message, List, Typography } from 'antd';
+import { Layout, Card, Button, Modal, Form, Input, message, List, Typography, Badge, Row, Col } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, FolderOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ref, push, set, get, remove } from 'firebase/database';
@@ -30,9 +30,16 @@ const Home = () => {
       const snapshot = await get(classesRef);
       if (snapshot.exists()) {
         const classesData = snapshot.val();
-        const classesArray = Object.entries(classesData).map(([id, data]) => ({
-          id,
-          ...data
+        const classesArray = await Promise.all(Object.entries(classesData).map(async ([id, data]) => {
+          const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${id}/assignments`);
+          const assignmentsSnapshot = await get(assignmentsRef);
+          const submittedCount = assignmentsSnapshot.exists() ? Object.keys(assignmentsSnapshot.val()).length : 0;
+
+          return {
+            id,
+            ...data,
+            submittedCount,
+          };
         }));
         setClasses(classesArray);
       } else {
@@ -95,6 +102,8 @@ const Home = () => {
     navigate(`/class/${classId}/assignments`);
   };
 
+
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Navbar />
@@ -124,27 +133,36 @@ const Home = () => {
             dataSource={classes}
             renderItem={(item) => (
               <List.Item>
-                <Card
-                  hoverable
-                  onClick={() => handleCardClick(item.id)}
-                  actions={[
-                    <EditOutlined key="edit" onClick={(e) => {
-                      e.stopPropagation();
-                      showModal(item);
-                    }} />,
-                    <DeleteOutlined key="delete" onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(item.id);
-                    }} />
-                  ]}
-                >
-                  <Card.Meta
-                    avatar={<FolderOutlined style={{ fontSize: 24 }} />}
-                    title={item.className}
-                    description={item.description}
-                  />
-                  
-                </Card>
+                
+                  <Card
+                    hoverable
+                    onClick={() => handleCardClick(item.id)}
+                    actions={[
+                      <EditOutlined key="edit" onClick={(e) => {
+                        e.stopPropagation();
+                        showModal(item);
+                      }} />,
+                      <DeleteOutlined key="delete" onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }} />
+                    ]}
+                  >
+                    <Row justify="space-between" align="middle">
+                      <Col>
+                        <Card.Meta
+                          avatar={<FolderOutlined style={{ fontSize: 24 }} />}
+                          title={item.className}
+                          description={item.description}
+                        />
+                      </Col>
+                      <Col>
+                        <Badge count={item.submittedCount} style={{ backgroundColor: '#52c41a' }} />
+                        <Typography.Text type="secondary">Submitted Assignments</Typography.Text>
+                      </Col>
+                    </Row>
+                  </Card>
+                
               </List.Item>
             )}
           />
