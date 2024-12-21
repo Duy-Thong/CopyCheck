@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col } from 'antd';
+import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty } from 'antd';
 import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { ref, push, set, get, remove } from 'firebase/database';
@@ -33,6 +33,7 @@ const ClassAssignments = () => {
   const [similarityResults, setSimilarityResults] = useState([]);
   const [fileInput, setFileInput] = useState(null);
   const [newAssignment, setNewAssignment] = useState(null);
+  const [similarityFilter, setSimilarityFilter] = useState('all');
 
   useEffect(() => {
     loadClassData();
@@ -41,7 +42,7 @@ const ClassAssignments = () => {
 
   useEffect(() => {
     filterAndSortAssignments();
-  }, [assignments, searchText, statusFilter, sortOrder]);
+  }, [assignments, searchText, statusFilter, sortOrder, similarityFilter]);
 
   const loadClassData = async () => {
     try {
@@ -85,7 +86,20 @@ const ClassAssignments = () => {
       // Extract text from PDF using pdfToText
       const text = await pdfToText(file);
       
-      // Save assignment data to database
+      // Find most similar existing assignment
+      let mostSimilarFile = '';
+      let highestSimilarity = 0;
+      
+      // Compare with existing assignments
+      assignments.forEach((assignment) => {
+        const similarity = calculateSimilarity(text, assignment.extractedText);
+        if (similarity > highestSimilarity) {
+          highestSimilarity = similarity;
+          mostSimilarFile = assignment.fileName;
+        }
+      });
+      
+      // Save assignment data to database with similarity results
       const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments`);
       const newAssignmentId = push(assignmentsRef).key;
       await set(ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${newAssignmentId}`), {
@@ -97,6 +111,8 @@ const ClassAssignments = () => {
         grade: null,
         feedback: '',
         lastModified: new Date().toISOString(),
+        similarFilename: mostSimilarFile,
+        similarityRatio: highestSimilarity
       });
       
       message.success('Assignment uploaded and processed successfully');
@@ -183,6 +199,23 @@ const ClassAssignments = () => {
     // Apply status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter(assignment => assignment.status === statusFilter);
+    }
+
+    // Apply similarity filter
+    if (similarityFilter !== 'all') {
+      filtered = filtered.filter(assignment => {
+        const similarity = assignment.similarityRatio ? Math.round(assignment.similarityRatio * 100) : 0;
+        switch (similarityFilter) {
+          case 'high':
+            return similarity >= 70;
+          case 'medium':
+            return similarity >= 40 && similarity < 70;
+          case 'low':
+            return similarity < 40;
+          default:
+            return true;
+        }
+      });
     }
 
     // Apply sorting
@@ -379,7 +412,7 @@ const ClassAssignments = () => {
 
           {/* Search, Filter, and Sort Controls */}
           <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col xs={24} sm={8}>
+            <Col xs={24} sm={6}>
               <Input
                 placeholder="Search by filename"
                 prefix={<SearchOutlined />}
@@ -388,7 +421,7 @@ const ClassAssignments = () => {
                 allowClear
               />
             </Col>
-            <Col xs={24} sm={8}>
+            <Col xs={24} sm={6}>
               <Select
                 style={{ width: '100%' }}
                 placeholder="Filter by status"
@@ -402,7 +435,21 @@ const ClassAssignments = () => {
                 <Select.Option value="Flagged">Flagged</Select.Option>
               </Select>
             </Col>
-            <Col xs={24} sm={8}>
+            <Col xs={24} sm={6}>
+              <Select
+                style={{ width: '100%' }}
+                placeholder="Filter by similarity"
+                onChange={(value) => setSimilarityFilter(value)}
+                value={similarityFilter}
+                suffixIcon={<FilterOutlined />}
+              >
+                <Select.Option value="all">All Similarities</Select.Option>
+                <Select.Option value="high">High (&ge;70%)</Select.Option>
+                <Select.Option value="medium">Medium (40-69%)</Select.Option>
+                <Select.Option value="low">Low (&lt;40%)</Select.Option>
+              </Select>
+            </Col>
+            <Col xs={24} sm={6}>
               <Button
                 icon={<SortAscendingOutlined />}
                 onClick={toggleSortOrder}
@@ -429,6 +476,11 @@ const ClassAssignments = () => {
               <List.Item>
                 <Card
                   hoverable
+                  style={{ 
+                    width: '100%',
+                    height: 180, // Fixed height for the card
+                    overflow: 'hidden' // Prevent content overflow
+                  }}
                   actions={[
                     <EditOutlined key="edit" onClick={(e) => {
                       e.stopPropagation();
@@ -451,15 +503,20 @@ const ClassAssignments = () => {
                 >
                   <Card.Meta
                     avatar={<FileTextOutlined style={{ fontSize: 24 }} />}
-                    title={item.fileName}
+                    title={<div style={{ marginBottom: 8 }}>{item.fileName}</div>}
                     description={
-                      <Space direction="vertical" size={0}>
-                        <Text type="secondary">
+                      <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                        <Text type="secondary" style={{ fontSize: '12px' }}>
                           {new Date(item.uploadDate).toLocaleDateString()}
                         </Text>
-                        <Text type={item.status === 'Flagged' ? 'danger' : 'secondary'}>
+                        <Text type={item.status === 'Flagged' ? 'danger' : 'secondary'} style={{ fontSize: '12px' }}>
                           Status: {item.status}
                         </Text>
+                        {item.similarFilename && (
+                          <Text type="warning" style={{ color: '#ff4d4f', fontSize: '12px' }}>
+                            {Math.round(item.similarityRatio * 100)}% similar to: {item.similarFilename}
+                          </Text>
+                        )}
                       </Space>
                     }
                   />
@@ -493,6 +550,36 @@ const ClassAssignments = () => {
                     <Paragraph>{selectedAssignment?.extractedText}</Paragraph>
                   </div>
                 </TabPane>
+                
+                {/* Add new Similar Files tab */}
+                <TabPane tab="Similar Files" key="similar">
+                  <div style={{ padding: '16px' }}>
+                    {selectedAssignment?.similarFilename ? (
+                      <Card>
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                          <Text strong>Most Similar File:</Text>
+                          <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                            <Space direction="vertical" style={{ width: '100%' }}>
+                              <Text>{selectedAssignment.similarFilename}</Text>
+                              <Text type="warning" style={{ color: '#ff4d4f' }}>
+                                Similarity: {Math.round(selectedAssignment.similarityRatio * 100)}%
+                              </Text>
+                            </Space>
+                          </div>
+                          {selectedAssignment.similarityRatio > 0.7 && (
+                            <Text type="danger">
+                              Warning: High similarity detected!
+                            </Text>
+                          )}
+                        </Space>
+                      </Card>
+                    ) : (
+                      <Empty description="No similar files found" />
+                    )}
+                  </div>
+                </TabPane>
+
+                {/* Existing tabs */}
                 <TabPane tab="Grade & Feedback" key="grade">
                   <Space direction="vertical" style={{ width: '100%', padding: '16px' }}>
                     <Form.Item
