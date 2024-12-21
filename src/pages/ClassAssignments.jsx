@@ -7,6 +7,7 @@ import { database } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import pdfToText from 'react-pdftotext';
+import { put } from '@vercel/blob';
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -82,14 +83,14 @@ const ClassAssignments = () => {
   const handleUpload = async (file) => {
     try {
       setUploading(true);
-      
+
       // Extract text from PDF using pdfToText
       const text = await pdfToText(file);
-      
+
       // Find most similar existing assignment
       let mostSimilarFile = '';
       let highestSimilarity = 0;
-      
+
       // Compare with existing assignments
       assignments.forEach((assignment) => {
         const similarity = calculateSimilarity(text, assignment.extractedText);
@@ -98,11 +99,11 @@ const ClassAssignments = () => {
           mostSimilarFile = assignment.fileName;
         }
       });
-      
+
       // Save assignment data to database with similarity results
       const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments`);
       const newAssignmentId = push(assignmentsRef).key;
-      await set(ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${newAssignmentId}`), {
+      const assignmentData = {
         fileName: file.name,
         uploadDate: new Date().toISOString(),
         extractedText: text,
@@ -113,8 +114,19 @@ const ClassAssignments = () => {
         lastModified: new Date().toISOString(),
         similarFilename: mostSimilarFile,
         similarityRatio: highestSimilarity
+      };
+
+      // Upload PDF to Vercel Blob
+      const pdfBuffer = await file.arrayBuffer();
+      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token: 'vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A' });
+      console.log('File uploaded to:', url);
+
+      // Save the URL to Firebase DB
+      await set(ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${newAssignmentId}`), {
+        ...assignmentData,
+        fileUrl: url // Add the file URL here
       });
-      
+
       message.success('Assignment uploaded and processed successfully');
       loadAssignments();
     } catch (error) {
@@ -280,7 +292,7 @@ const ClassAssignments = () => {
     try {
       console.log('Updating assignment with values:', values);
       console.log('Selected assignment:', selectedAssignment);
-      
+
       if (!selectedAssignment || !selectedAssignment.id) {
         message.error('No assignment selected');
         return;
@@ -300,16 +312,16 @@ const ClassAssignments = () => {
       };
 
       console.log('Updated assignment data:', updatedAssignment);
-      
+
       await set(assignmentRef, updatedAssignment);
       setSelectedAssignment(updatedAssignment);
-      
+
       // Update the form's status field to reflect the change
       if (values.grade && values.status !== 'Reviewed') {
         viewForm.setFieldValue('status', 'Reviewed');
         message.info('Status automatically set to Reviewed');
       }
-      
+
       message.success('Assignment updated successfully');
       loadAssignments();
     } catch (error) {
@@ -497,7 +509,8 @@ const ClassAssignments = () => {
                       cancelText="No"
                     >
                       <DeleteOutlined key="delete" onClick={(e) => e.stopPropagation()} />
-                    </Popconfirm>
+                    </Popconfirm>,
+                    <Button key="view" onClick={() => window.open(item.fileUrl, '_blank')}>View PDF</Button>
                   ]}
                   onClick={() => showAssignmentContent(item)}
                 >
@@ -550,7 +563,7 @@ const ClassAssignments = () => {
                     <Paragraph>{selectedAssignment?.extractedText}</Paragraph>
                   </div>
                 </TabPane>
-                
+
                 {/* Add new Similar Files tab */}
                 <TabPane tab="Similar Files" key="similar">
                   <div style={{ padding: '16px' }}>
