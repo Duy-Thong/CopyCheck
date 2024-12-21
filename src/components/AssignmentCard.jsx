@@ -4,7 +4,7 @@ import { FileTextOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-desi
 
 const { Text } = Typography;
 
-const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick }) => {
+const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style }) => {
   const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
 
   const getSimilarityColor = (ratio) => {
@@ -17,8 +17,16 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick }) => {
   return (
     <>
       <Card
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          ...style
+        }}
         hoverable
-        className="w-full min-h-[200px] transition-all duration-300 hover:shadow-lg"
+        className="w-full min-h-[160px] transition-all duration-300 hover:shadow-lg"
+        bodyStyle={{ padding: '12px' }}
         onClick={(e) => {
           // Don't trigger card click if clicking on action buttons
           if (e.target.closest('.ant-card-actions')) return;
@@ -57,28 +65,29 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick }) => {
           </Button>
         ]}
       >
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2" style={{ flex: 1, minHeight: '120px' }}>
           {/* Header */}
-          <div className="flex items-start gap-3">
-            <FileTextOutlined className="text-2xl mt-1 text-blue-500" />
+          <div className="flex items-start gap-2">
+            <FileTextOutlined className="text-lg mt-1 text-blue-500" />
             <div className="flex-1 flex flex-col gap-1">
-              <Text strong className="text-base truncate">
+              <Text strong className="text-sm truncate">
                 {assignment.fileName}
               </Text>
-              <br></br>
+              <div className="flex items-center gap-1">
                 <ClockCircleOutlined className="text-xs" />
                 <Text type="secondary" className="text-xs">
                   {new Date(assignment.uploadDate).toLocaleDateString()}
                 </Text>
+              </div>
             </div>
           </div>
 
           {/* Tags Section */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1">
             <Tag 
               color={assignment.status === 'Flagged' ? 'red' : 
                      assignment.status === 'Reviewed' ? 'green' : 'blue'}
-              className="rounded-full px-3"
+              className="rounded-full px-2 text-xs"
             >
               {assignment.status}
             </Tag>
@@ -87,7 +96,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick }) => {
               <Tooltip title={`Similar to: ${assignment.similarFilename}`}>
                 <Tag 
                   color={getSimilarityColor(assignment.similarityRatio)}
-                  className="rounded-full px-3 cursor-help"
+                  className="rounded-full px-2 text-xs cursor-help"
                 >
                   {Math.round(assignment.similarityRatio * 100)}% Similar
                 </Tag>
@@ -97,7 +106,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick }) => {
             {assignment.grade && (
               <Tag 
                 color="processing" 
-                className="rounded-full px-3"
+                className="rounded-full px-2 text-xs"
               >
                 Grade: {assignment.grade}%
               </Tag>

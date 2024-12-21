@@ -421,14 +421,21 @@ const ClassAssignments = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Navbar />
-      <Content style={{ padding: '24px', background: '#f0f2f5' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <Content style={{ padding: '12px', background: '#f0f2f5' }}>
+        <div style={{ maxWidth: '100%', margin: '0 auto' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+            justifyContent: 'space-between', 
+            alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+            marginBottom: 24,
+            gap: '16px'
+          }}>
             <div>
-              <Title level={2}>{classData?.className || 'Class Assignments'}</Title>
+              <Title level={window.innerWidth < 768 ? 3 : 2}>{classData?.className || 'Class Assignments'}</Title>
               <Text type="secondary">{classData?.description}</Text>
             </div>
-            <Space>
+            <Space wrap>
               <Button 
                 type="primary" 
                 icon={<SwapOutlined />}
@@ -443,24 +450,25 @@ const ClassAssignments = () => {
                   icon={<UploadOutlined />}
                   loading={uploading}
                 >
-                  Upload Assignment
+                  Upload
                 </Button>
               </Upload>
             </Space>
           </div>
 
           {/* Search, Filter, and Sort Controls */}
-          <Row gutter={16} style={{ marginBottom: 16 }} align="middle">
-            <Col flex="200px">
+          <Row gutter={[16, 16]} style={{ marginBottom: 16 }} align="middle">
+            <Col xs={24} sm={12} md={6}>
               <Input
                 placeholder="Search by filename"
                 prefix={<SearchOutlined />}
                 onChange={(e) => handleSearch(e.target.value)}
                 value={searchText}
                 allowClear
+                style={{ width: '100%' }}
               />
             </Col>
-            <Col flex="180px">
+            <Col xs={24} sm={12} md={6}>
               <Select
                 style={{ width: '100%' }}
                 placeholder="Filter by status"
@@ -474,7 +482,7 @@ const ClassAssignments = () => {
                 <Select.Option value="Flagged">Flagged</Select.Option>
               </Select>
             </Col>
-            <Col flex="180px">
+            <Col xs={24} sm={12} md={6}>
               <Select
                 style={{ width: '100%' }}
                 placeholder="Filter by similarity"
@@ -488,33 +496,32 @@ const ClassAssignments = () => {
                 <Select.Option value="low">Low (&lt;40%)</Select.Option>
               </Select>
             </Col>
-            <Col flex="280px">
-              <RangePicker
-                style={{ width: '100%' }}
-                onChange={handleDateRangeChange}
-                placeholder={['Start Date', 'End Date']}
-              />
-            </Col>
-            <Col flex="120px">
-              <Button
-                icon={<SortAscendingOutlined />}
-                onClick={toggleSortOrder}
-                style={{ width: '100%' }}
-              >
-                Sort {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
-              </Button>
+            <Col xs={24} sm={12} md={6}>
+              <Space.Compact style={{ width: '100%' }}>
+                <RangePicker
+                  style={{ width: '100%' }}
+                  onChange={handleDateRangeChange}
+                  placeholder={['Start', 'End']}
+                />
+                <Button
+                  icon={<SortAscendingOutlined />}
+                  onClick={toggleSortOrder}
+                >
+                  {window.innerWidth >= 768 ? (sortOrder === 'asc' ? 'A-Z' : 'Z-A') : ''}
+                </Button>
+              </Space.Compact>
             </Col>
           </Row>
 
           <List
             grid={{
-              gutter: 16,
-              xs: 1,
-              sm: 2,
-              md: 2,
-              lg: 3,
-              xl: 3,
-              xxl: 4,
+              gutter: [16, 16],
+              xs: 1,    // 1 card per row on extra small screens
+              sm: 2,    // 2 cards per row on small screens
+              md: 3,    // 3 cards per row on medium screens
+              lg: 4,    // 4 cards per row on large screens
+              xl: 4,    // 4 cards per row on extra large screens
+              xxl: 4,   // 4 cards per row on extra extra large screens
             }}
             dataSource={filteredAssignments}
             loading={loading}
@@ -524,7 +531,7 @@ const ClassAssignments = () => {
                   assignment={item}
                   onDelete={handleDelete}
                   onViewPdf={showPdfModal}
-                  onCardClick={showAssignmentContent} // Add this prop
+                  onCardClick={showAssignmentContent}
                 />
               </List.Item>
             )}
@@ -535,7 +542,8 @@ const ClassAssignments = () => {
             title={selectedAssignment?.fileName}
             open={isModalVisible}
             onCancel={() => setIsModalVisible(false)}
-            width={800}
+            width={window.innerWidth < 768 ? '95%' : 800}
+            style={{ top: 20 }}
             footer={null}
           >
             <Form
@@ -722,7 +730,8 @@ const ClassAssignments = () => {
             title="Similarity Results"
             open={isCompareModalVisible}
             onCancel={() => setIsCompareModalVisible(false)}
-            width={800}
+            width={window.innerWidth < 768 ? '95%' : 800}
+            style={{ top: 20 }}
             footer={null}
           >
             <List
@@ -750,9 +759,18 @@ const ClassAssignments = () => {
             title="View PDF"
             visible={isPdfModalVisible}
             onCancel={handleClosePdfModal}
+            width={window.innerWidth < 768 ? '95%' : '80%'}
+            style={{ top: 20 }}
             footer={null}
           >
-            <iframe src={pdfUrl} style={{ width: '100%', height: '500px' }} frameBorder="0"></iframe>
+            <iframe 
+              src={pdfUrl} 
+              style={{ 
+                width: '100%', 
+                height: window.innerWidth < 768 ? '400px' : '500px' 
+              }} 
+              frameBorder="0"
+            />
           </Modal>
 
           {/* Similarity Results */}
