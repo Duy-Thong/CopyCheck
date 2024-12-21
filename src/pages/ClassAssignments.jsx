@@ -26,8 +26,6 @@ const ClassAssignments = () => {
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isCompareModalVisible, setIsCompareModalVisible] = useState(false);
-  const [compareResults, setCompareResults] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -168,27 +166,6 @@ const ClassAssignments = () => {
       message.error('Failed to delete assignment');
       console.error(error);
     }
-  };
-
-  const compareAssignments = () => {
-    const results = [];
-    for (let i = 0; i < assignments.length; i++) {
-      for (let j = i + 1; j < assignments.length; j++) {
-        const similarity = calculateSimilarity(
-          assignments[i].extractedText,
-          assignments[j].extractedText
-        );
-        if (similarity > 0.7) { // 70% similarity threshold
-          results.push({
-            assignment1: assignments[i],
-            assignment2: assignments[j],
-            similarity: Math.round(similarity * 100)
-          });
-        }
-      }
-    }
-    setCompareResults(results);
-    setIsCompareModalVisible(true);
   };
 
   const calculateSimilarity = (text1, text2) => {
@@ -428,6 +405,15 @@ const ClassAssignments = () => {
               <Title level={2}>{classData?.className || 'Class Assignments'}</Title>
               <Text type="secondary">{classData?.description}</Text>
             </div>
+            <Upload {...uploadProps}>
+              <Button 
+                type="primary" 
+                icon={<UploadOutlined />}
+                loading={uploading}
+              >
+                Upload
+              </Button>
+            </Upload>
             <Space>
               
               <Upload {...uploadProps}>
@@ -717,34 +703,6 @@ const ClassAssignments = () => {
                 </Button>
               </Form.Item>
             </Form>
-          </Modal>
-
-          {/* Compare Results Modal */}
-          <Modal
-            title="Similarity Results"
-            open={isCompareModalVisible}
-            onCancel={() => setIsCompareModalVisible(false)}
-            width={800}
-            footer={null}
-          >
-            <List
-              dataSource={compareResults}
-              renderItem={(item) => (
-                <List.Item>
-                  <Card style={{ width: '100%' }}>
-                    <Space direction="vertical" style={{ width: '100%' }}>
-                      <Text strong>Similarity: {item.similarity}%</Text>
-                      <Space>
-                        <Text>Between:</Text>
-                        <Text type="secondary">{item.assignment1.fileName}</Text>
-                        <Text>and</Text>
-                        <Text type="secondary">{item.assignment2.fileName}</Text>
-                      </Space>
-                    </Space>
-                  </Card>
-                </List.Item>
-              )}
-            />
           </Modal>
 
           {/* PDF Modal */}
