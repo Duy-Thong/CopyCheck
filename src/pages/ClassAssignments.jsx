@@ -38,6 +38,9 @@ const ClassAssignments = () => {
   const [pdfUrl, setPdfUrl] = useState('');
   const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
   const [dateRange, setDateRange] = useState(null);
+  const [isCompareModalVisible, setIsCompareModalVisible] = useState(false);
+  const [comparedAssignment, setComparedAssignment] = useState(null);
+  const [syncScrolling, setSyncScrolling] = useState(true);
 
   useEffect(() => {
     loadClassData();
@@ -395,6 +398,118 @@ const ClassAssignments = () => {
     setIsPdfModalVisible(false);
   };
 
+  const showCompareModal = async (originalAssignment) => {
+    try {
+      const similarAssignment = assignments.find(
+        a => a.fileName === originalAssignment.similarFilename
+      );
+      
+      if (similarAssignment) {
+        setComparedAssignment(similarAssignment);
+        setIsCompareModalVisible(true);
+      } else {
+        message.error('Could not find the similar assignment for comparison');
+      }
+    } catch (error) {
+      console.error('Error showing comparison:', error);
+      message.error('Failed to load comparison view');
+    }
+  };
+
+  const handleSyncScroll = (event, source) => {
+    if (!syncScrolling) return;
+    
+    const container = event.target;
+    const containers = document.querySelectorAll('.pdf-container');
+    
+    containers.forEach(elem => {
+      if (elem !== container) {
+        elem.scrollTop = container.scrollTop;
+      }
+    });
+  };
+
+  const toggleSyncScrolling = () => {
+    setSyncScrolling(!syncScrolling);
+  };
+
+  const renderCompareModal = () => (
+    <Modal
+      title={
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Compare Assignments</span>
+          <Button
+            type="text"
+            onClick={toggleSyncScrolling}
+            icon={<SwapOutlined />}
+            style={{ color: syncScrolling ? '#1890ff' : '#999' }}
+          >
+            {syncScrolling ? 'Sync ON' : 'Sync OFF'}
+          </Button>
+        </div>
+      }
+      open={isCompareModalVisible}
+      onCancel={() => setIsCompareModalVisible(false)}
+      width="95%"
+      style={{ top: 20 }}
+      footer={null}
+    >
+      <div style={{ display: 'flex', height: '85vh', gap: '16px' }}>
+        {/* Original Assignment PDF */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Title level={4}>{selectedAssignment?.fileName}</Title>
+          <div 
+            className="pdf-container"
+            onScroll={(e) => syncScrolling && handleSyncScroll(e, 'left')}
+            style={{ 
+              flex: 1, 
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              overflow: 'auto'
+            }}
+          >
+            <object
+              data={selectedAssignment?.fileUrl}
+              type="application/pdf"
+              style={{ 
+                width: '100%',
+                height: '100%'
+              }}
+            >
+              <p>Unable to display PDF. <a href={selectedAssignment?.fileUrl} target="_blank" rel="noopener noreferrer">Download</a> instead.</p>
+            </object>
+          </div>
+        </div>
+
+        {/* Similar Assignment PDF */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Title level={4}>{comparedAssignment?.fileName}</Title>
+          <div 
+            className="pdf-container"
+            onScroll={(e) => syncScrolling && handleSyncScroll(e, 'right')}
+            style={{ 
+              flex: 1, 
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              overflow: 'auto'
+            }}
+          >
+            <object
+              data={comparedAssignment?.fileUrl}
+              type="application/pdf"
+              style={{ 
+                width: '100%',
+                height: '100%'
+              }}
+            >
+              <p>Unable to display PDF. <a href={comparedAssignment?.fileUrl} target="_blank" rel="noopener noreferrer">Download</a> instead.</p>
+            </object>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Navbar />
@@ -550,6 +665,13 @@ const ClassAssignments = () => {
                               <Text type="warning" style={{ color: '#ff4d4f' }}>
                                 Similarity: {Math.round(selectedAssignment.similarityRatio * 100)}%
                               </Text>
+                              <Button 
+                                type="primary" 
+                                icon={<SwapOutlined />}
+                                onClick={() => showCompareModal(selectedAssignment)}
+                              >
+                                Compare Files
+                              </Button>
                             </Space>
                           </div>
                           {selectedAssignment.similarityRatio > 0.7 && (
@@ -714,6 +836,9 @@ const ClassAssignments = () => {
               <div key={index}>File: {result.file}, Similarity: {result.similarity}</div>
             ))}
           </div>
+
+          {/* Add the new Compare Modal */}
+          {renderCompareModal()}
         </div>
       </Content>
     </Layout>
