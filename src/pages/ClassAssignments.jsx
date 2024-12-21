@@ -517,7 +517,12 @@ const ClassAssignments = () => {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
             <div>
-              <Title level={2}>{classData?.className || 'Class Assignments'}</Title>
+              <Title level={2}>
+                {classData?.className || 'Class Assignments'} 
+                <Text type="secondary" style={{ fontSize: '16px', marginLeft: '12px' }}>
+                  (Code: {classData?.classCode})
+                </Text>
+              </Title>
               <Text type="secondary">{classData?.description}</Text>
             </div>
             
