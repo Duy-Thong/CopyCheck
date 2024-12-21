@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe } from 'antd';
+import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe, DatePicker } from 'antd';
 import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { ref, push, set, get, remove } from 'firebase/database';
@@ -8,10 +8,12 @@ import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import pdfToText from 'react-pdftotext';
 import { put } from '@vercel/blob';
+import AssignmentCard from '../components/AssignmentCard';
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
 
 const ClassAssignments = () => {
   const { classId } = useParams();
@@ -37,6 +39,7 @@ const ClassAssignments = () => {
   const [similarityFilter, setSimilarityFilter] = useState('all');
   const [pdfUrl, setPdfUrl] = useState('');
   const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
+  const [dateRange, setDateRange] = useState(null);
 
   useEffect(() => {
     loadClassData();
@@ -45,7 +48,7 @@ const ClassAssignments = () => {
 
   useEffect(() => {
     filterAndSortAssignments();
-  }, [assignments, searchText, statusFilter, sortOrder, similarityFilter]);
+  }, [assignments, searchText, statusFilter, sortOrder, similarityFilter, dateRange]);
 
   const loadClassData = async () => {
     try {
@@ -120,7 +123,7 @@ const ClassAssignments = () => {
 
       // Upload PDF to Vercel Blob
       const pdfBuffer = await file.arrayBuffer();
-      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token: 'vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A' });
+      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token: process.env.REACT_APP_BLOB_READ_WRITE_TOKEN });
       console.log('File uploaded to:', url);
 
       // Save the URL to Firebase DB
@@ -201,7 +204,16 @@ const ClassAssignments = () => {
   };
 
   const filterAndSortAssignments = () => {
-    let filtered = [...assignments];
+    let filtered = [...assignments].filter(assignment => assignment && assignment.fileName);
+
+    // Apply date range filter
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      filtered = filtered.filter(assignment => {
+        const uploadDate = new Date(assignment.uploadDate);
+        return uploadDate >= dateRange[0].startOf('day') && 
+               uploadDate <= dateRange[1].endOf('day');
+      });
+    }
 
     // Apply search filter
     if (searchText) {
@@ -256,6 +268,10 @@ const ClassAssignments = () => {
 
   const toggleSortOrder = () => {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
+  const handleDateRangeChange = (dates) => {
+    setDateRange(dates);
   };
 
   const uploadProps = {
@@ -434,8 +450,8 @@ const ClassAssignments = () => {
           </div>
 
           {/* Search, Filter, and Sort Controls */}
-          <Row gutter={16} style={{ marginBottom: 16 }}>
-            <Col xs={24} sm={6}>
+          <Row gutter={16} style={{ marginBottom: 16 }} align="middle">
+            <Col flex="200px">
               <Input
                 placeholder="Search by filename"
                 prefix={<SearchOutlined />}
@@ -444,7 +460,7 @@ const ClassAssignments = () => {
                 allowClear
               />
             </Col>
-            <Col xs={24} sm={6}>
+            <Col flex="180px">
               <Select
                 style={{ width: '100%' }}
                 placeholder="Filter by status"
@@ -458,7 +474,7 @@ const ClassAssignments = () => {
                 <Select.Option value="Flagged">Flagged</Select.Option>
               </Select>
             </Col>
-            <Col xs={24} sm={6}>
+            <Col flex="180px">
               <Select
                 style={{ width: '100%' }}
                 placeholder="Filter by similarity"
@@ -472,7 +488,14 @@ const ClassAssignments = () => {
                 <Select.Option value="low">Low (&lt;40%)</Select.Option>
               </Select>
             </Col>
-            <Col xs={24} sm={6}>
+            <Col flex="280px">
+              <RangePicker
+                style={{ width: '100%' }}
+                onChange={handleDateRangeChange}
+                placeholder={['Start Date', 'End Date']}
+              />
+            </Col>
+            <Col flex="120px">
               <Button
                 icon={<SortAscendingOutlined />}
                 onClick={toggleSortOrder}
@@ -497,49 +520,12 @@ const ClassAssignments = () => {
             loading={loading}
             renderItem={(item) => (
               <List.Item>
-                <Card
-                  hoverable
-                  style={{ 
-                    width: '100%',
-                    height: 180, // Fixed height for the card
-                    overflow: 'hidden' // Prevent content overflow
-                  }}
-                >
-                  <Card.Meta
-                    avatar={<FileTextOutlined style={{ fontSize: 24 }} />}
-                    title={<div style={{ marginBottom: 8 }}>{item.fileName}</div>}
-                    description={
-                      <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                          {new Date(item.uploadDate).toLocaleDateString()}
-                        </Text>
-                        <Text type={item.status === 'Flagged' ? 'danger' : 'secondary'} style={{ fontSize: '12px' }}>
-                          Status: {item.status}
-                        </Text>
-                        {item.similarFilename && (
-                          <Text type="warning" style={{ color: '#ff4d4f', fontSize: '12px' }}>
-                            {Math.round(item.similarityRatio * 100)}% similar to: {item.similarFilename}
-                          </Text>
-                        )}
-                      </Space>
-                    }
-                  />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                    <Popconfirm
-                      title="Delete assignment"
-                      description="Are you sure you want to delete this assignment?"
-                      onConfirm={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id);
-                      }}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <DeleteOutlined key="delete" onClick={(e) => e.stopPropagation()} />
-                    </Popconfirm>
-                    <Button key="view" onClick={() => showPdfModal(item.fileUrl)}>View PDF</Button>
-                  </div>
-                </Card>
+                <AssignmentCard
+                  assignment={item}
+                  onDelete={handleDelete}
+                  onViewPdf={showPdfModal}
+                  onCardClick={showAssignmentContent} // Add this prop
+                />
               </List.Item>
             )}
           />
