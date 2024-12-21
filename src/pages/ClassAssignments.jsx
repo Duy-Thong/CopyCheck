@@ -405,15 +405,8 @@ const ClassAssignments = () => {
               <Title level={2}>{classData?.className || 'Class Assignments'}</Title>
               <Text type="secondary">{classData?.description}</Text>
             </div>
-            <Upload {...uploadProps}>
-              <Button 
-                type="primary" 
-                icon={<UploadOutlined />}
-                loading={uploading}
-              >
-                Upload
-              </Button>
-            </Upload>
+            
+            
             <Space>
               
               <Upload {...uploadProps}>
