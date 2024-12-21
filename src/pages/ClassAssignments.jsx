@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty } from 'antd';
+import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe } from 'antd';
 import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { ref, push, set, get, remove } from 'firebase/database';
@@ -35,6 +35,8 @@ const ClassAssignments = () => {
   const [fileInput, setFileInput] = useState(null);
   const [newAssignment, setNewAssignment] = useState(null);
   const [similarityFilter, setSimilarityFilter] = useState('all');
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
 
   useEffect(() => {
     loadClassData();
@@ -391,6 +393,15 @@ const ClassAssignments = () => {
     });
   };
 
+  const showPdfModal = (url) => {
+    setPdfUrl(url);
+    setIsPdfModalVisible(true);
+  };
+
+  const handleClosePdfModal = () => {
+    setIsPdfModalVisible(false);
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Navbar />
@@ -493,26 +504,6 @@ const ClassAssignments = () => {
                     height: 180, // Fixed height for the card
                     overflow: 'hidden' // Prevent content overflow
                   }}
-                  actions={[
-                    <EditOutlined key="edit" onClick={(e) => {
-                      e.stopPropagation();
-                      showEditModal(item);
-                    }} />,
-                    <Popconfirm
-                      title="Delete assignment"
-                      description="Are you sure you want to delete this assignment?"
-                      onConfirm={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id);
-                      }}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <DeleteOutlined key="delete" onClick={(e) => e.stopPropagation()} />
-                    </Popconfirm>,
-                    <Button key="view" onClick={() => window.open(item.fileUrl, '_blank')}>View PDF</Button>
-                  ]}
-                  onClick={() => showAssignmentContent(item)}
                 >
                   <Card.Meta
                     avatar={<FileTextOutlined style={{ fontSize: 24 }} />}
@@ -533,6 +524,21 @@ const ClassAssignments = () => {
                       </Space>
                     }
                   />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                    <Popconfirm
+                      title="Delete assignment"
+                      description="Are you sure you want to delete this assignment?"
+                      onConfirm={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <DeleteOutlined key="delete" onClick={(e) => e.stopPropagation()} />
+                    </Popconfirm>
+                    <Button key="view" onClick={() => showPdfModal(item.fileUrl)}>View PDF</Button>
+                  </div>
                 </Card>
               </List.Item>
             )}
@@ -751,6 +757,16 @@ const ClassAssignments = () => {
                 </List.Item>
               )}
             />
+          </Modal>
+
+          {/* PDF Modal */}
+          <Modal
+            title="View PDF"
+            visible={isPdfModalVisible}
+            onCancel={handleClosePdfModal}
+            footer={null}
+          >
+            <iframe src={pdfUrl} style={{ width: '100%', height: '500px' }} frameBorder="0"></iframe>
           </Modal>
 
           {/* Similarity Results */}
