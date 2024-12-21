@@ -1,17 +1,40 @@
 import React, { useState } from 'react';
-import { Card, Space, Button, Popconfirm, Typography, Tag, Tooltip, Modal } from 'antd';
+import { Card, Space, Button, Popconfirm, Typography, Tag, Tooltip, Modal, List, Progress } from 'antd';
 import { FileTextOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
 const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style }) => {
   const [isPdfModalVisible, setIsPdfModalVisible] = useState(false);
+  const [similarFilesVisible, setSimilarFilesVisible] = useState(false);
 
   const getSimilarityColor = (ratio) => {
     const percentage = Math.round(ratio * 100);
     if (percentage >= 70) return 'red';
     if (percentage >= 40) return 'orange';
     return 'green';
+  };
+
+  const renderSimilarityBadge = () => {
+    if (!assignment.similarFiles || assignment.similarFiles.length === 0) return null;
+    
+    const highestSimilarity = Math.max(...assignment.similarFiles.map(f => f.similarity));
+    const similarCount = assignment.similarFiles.length;
+
+    return (
+      <Tooltip title={`Click to see ${similarCount} similar files`}>
+        <Tag 
+          color={getSimilarityColor(highestSimilarity/100)}
+          className="rounded-full px-2 text-xs cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSimilarFilesVisible(true);
+          }}
+        >
+          {similarCount} Similar ({Math.round(highestSimilarity)}%)
+        </Tag>
+      </Tooltip>
+    );
   };
 
   return (
@@ -92,16 +115,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
               {assignment.status}
             </Tag>
 
-            {assignment.similarFilename && (
-              <Tooltip title={`Similar to: ${assignment.similarFilename}`}>
-                <Tag 
-                  color={getSimilarityColor(assignment.similarityRatio)}
-                  className="rounded-full px-2 text-xs cursor-help"
-                >
-                  {Math.round(assignment.similarityRatio * 100)}% Similar
-                </Tag>
-              </Tooltip>
-            )}
+            {renderSimilarityBadge()}
 
             {assignment.grade && (
               <Tag 
@@ -114,6 +128,33 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
           </div>
         </div>
       </Card>
+
+      {/* Similar Files Modal */}
+      <Modal
+        title="Similar Assignments"
+        open={similarFilesVisible}
+        onCancel={() => setSimilarFilesVisible(false)}
+        footer={null}
+      >
+        <List
+          dataSource={assignment.similarFiles || []}
+          renderItem={similar => (
+            <List.Item>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Text strong>{similar.fileName}</Text>
+                <Progress 
+                  percent={Math.round(similar.similarity)} 
+                  status={similar.similarity >= 70 ? 'exception' : 'normal'}
+                  size="small"
+                />
+                <Text type="secondary">
+                  Uploaded: {new Date(similar.uploadDate).toLocaleDateString()}
+                </Text>
+              </Space>
+            </List.Item>
+          )}
+        />
+      </Modal>
 
       <Modal
         title={assignment.fileName}
