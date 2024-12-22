@@ -173,45 +173,7 @@ const ClassAssignments = () => {
   };
 
   // Thêm các hàm tính toán độ tương đồng mới
-  const calculateCosineSimilarity = (text1, text2) => {
-    const words1 = text1.toLowerCase().split(/\W+/);
-    const words2 = text2.toLowerCase().split(/\W+/);
-    const wordSet = new Set([...words1, ...words2]);
-    
-    const freqVector1 = {};
-    const freqVector2 = {};
-    wordSet.forEach(word => {
-      freqVector1[word] = words1.filter(w => w === word).length;
-      freqVector2[word] = words2.filter(w => w === word).length;
-    });
-
-    let dotProduct = 0;
-    let norm1 = 0;
-    let norm2 = 0;
-    
-    Object.keys(freqVector1).forEach(word => {
-      dotProduct += freqVector1[word] * freqVector2[word];
-      norm1 += freqVector1[word] * freqVector1[word];
-      norm2 += freqVector2[word] * freqVector2[word];
-    });
-
-    return norm1 && norm2 ? dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2)) : 0;
-  };
-
   const calculateSimilarity = (text1, text2) => {
-    const jaccardSim = calculateJaccardSimilarity(text1, text2);
-    const cosineSim = calculateCosineSimilarity(text1, text2);
-
-    // Weight distribution: 50-50 between Jaccard and Cosine
-    const weights = {
-      jaccard: 0.5,
-      cosine: 0.5
-    };
-
-    return (jaccardSim * weights.jaccard + cosineSim * weights.cosine);
-  };
-
-  const calculateJaccardSimilarity = (text1, text2) => {
     const words1 = text1.split(/\W+/);
     const words2 = text2.split(/\W+/);
     const wordSet1 = new Set(words1);
