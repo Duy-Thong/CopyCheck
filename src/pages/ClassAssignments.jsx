@@ -7,7 +7,7 @@ import { database } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import pdfToText from 'react-pdftotext';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import AssignmentCard from '../components/AssignmentCard';
 
 const { Content } = Layout;
@@ -124,7 +124,7 @@ const ClassAssignments = () => {
 
       // Upload PDF to Vercel Blob
       const pdfBuffer = await file.arrayBuffer();
-      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN });
+      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token:"vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A" });
       console.log('File uploaded to:', url);
 
       // Save the URL to Firebase DB
@@ -161,10 +161,30 @@ const ClassAssignments = () => {
 
   const handleDelete = async (assignmentId) => {
     try {
+      // Get the assignment data first to get the file URL
       const assignmentRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${assignmentId}`);
-      await remove(assignmentRef);
-      message.success('Assignment deleted successfully');
-      loadAssignments();
+      const snapshot = await get(assignmentRef);
+      
+      if (snapshot.exists()) {
+        const assignment = snapshot.val();
+        
+        // Delete from Vercel Blob storage first
+        if (assignment.fileUrl) {
+          try {
+            await del(assignment.fileUrl, { 
+              token: "vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A"
+            });
+            console.log('File deleted from Vercel Blob');
+          } catch (blobError) {
+            console.error('Error deleting from Vercel Blob:', blobError);
+          }
+        }
+        
+        // Then delete from Firebase
+        await remove(assignmentRef);
+        message.success('Assignment deleted successfully');
+        loadAssignments();
+      }
     } catch (error) {
       message.error('Failed to delete assignment');
       console.error(error);
