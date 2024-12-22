@@ -5,8 +5,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import AccountManagement from './pages/AccountManagement';
-
+import ClassAssignments from './pages/ClassAssignments';
 function App() {
   return (
     <Router>
@@ -17,15 +16,14 @@ function App() {
               <Home />
             </PrivateRoute>
           } />
+          <Route path="/class/:classId/assignments" element={
+            <PrivateRoute>
+              <ClassAssignments />
+            </PrivateRoute>
+          } />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="*" element={<Navigate to="/" />} />
-          <Route path="/account" element={
-            <PrivateRoute>
-              <AccountManagement />
-            </PrivateRoute>
-          } />
-
         </Routes>
       </AuthProvider>
     </Router>
