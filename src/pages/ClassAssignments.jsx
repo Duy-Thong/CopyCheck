@@ -124,7 +124,7 @@ const ClassAssignments = () => {
 
       // Upload PDF to Vercel Blob
       const pdfBuffer = await file.arrayBuffer();
-      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token: process.env.REACT_APP_BLOB_READ_WRITE_TOKEN });
+      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN });
       console.log('File uploaded to:', url);
 
       // Save the URL to Firebase DB
