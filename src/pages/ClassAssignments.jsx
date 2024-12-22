@@ -161,30 +161,11 @@ const ClassAssignments = () => {
 
   const handleDelete = async (assignmentId) => {
     try {
-      // Get the assignment data first to get the file URL
+      // Delete from Firebase
       const assignmentRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${assignmentId}`);
-      const snapshot = await get(assignmentRef);
-      
-      if (snapshot.exists()) {
-        const assignment = snapshot.val();
-        
-        // Delete from Vercel Blob storage first
-        if (assignment.fileUrl) {
-          try {
-            await del(assignment.fileUrl, { 
-              token: "vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A"
-            });
-            console.log('File deleted from Vercel Blob');
-          } catch (blobError) {
-            console.error('Error deleting from Vercel Blob:', blobError);
-          }
-        }
-        
-        // Then delete from Firebase
-        await remove(assignmentRef);
-        message.success('Assignment deleted successfully');
-        loadAssignments();
-      }
+      await remove(assignmentRef);
+      message.success('Assignment deleted successfully');
+      loadAssignments();
     } catch (error) {
       message.error('Failed to delete assignment');
       console.error(error);
