@@ -629,9 +629,9 @@ const ClassAssignments = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen ">
       <Navbar />
-      <Content className="p-6 bg-gray-100">
+      <Content className="p-6  bg-gradient-to-br from-blue-100 to-blue-400">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div>

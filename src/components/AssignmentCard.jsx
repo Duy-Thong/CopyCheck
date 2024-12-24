@@ -23,7 +23,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
           ...style
         }}
         hoverable
-        className="w-full min-h-[180px] glassmorphism" // Tăng min-height
+        className="w-full min-h-[180px] glassmorphism [&_.ant-card-actions]:!bg-transparent" // Added transparent background for actions
         bodyStyle={{ padding: '16px' }} // Tăng padding
         onClick={(e) => {
           // Don't trigger card click if clicking on action buttons
@@ -31,7 +31,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
           onCardClick(assignment);
         }}
         actions={[
-          <Tooltip title="Delete Assignment">
+          <Tooltip title="Delete Assignment" >
             <Popconfirm
               title="Delete assignment"
               description="Are you sure you want to delete this assignment?"
@@ -45,7 +45,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
               <DeleteOutlined 
                 key="delete" 
                 onClick={(e) => e.stopPropagation()}
-                className="text-gray-400 hover:text-red-500 transition-colors text-sm" 
+                className="!text-red-500 hover:text-red-500 transition-colors" // Removed background styling
               />
             </Popconfirm>
           </Tooltip>,
@@ -56,7 +56,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
               e.stopPropagation();
               setIsPdfModalVisible(true);
             }}
-            className="hover:text-blue-600 text-sm p-0"
+            className="hover:text-blue-600 text-sm " // Removed padding and background
             size="small"
           >
             View PDF
@@ -69,13 +69,13 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
             <FileTextOutlined className="text-xl mt-1 text-blue-500 flex-shrink-0" /> {/* Tăng kích thước icon */}
             <div className="flex-1 min-w-0 space-y-2"> {/* Thêm space-y-2 để tạo khoảng cách dọc */}
               <Tooltip title={assignment.fileName}>
-                <Text strong className="text-sm block truncate whitespace-normal break-words line-clamp-2"> {/* Cho phép xuống 2 dòng */}
+                <Text strong className="text-sm block truncate whitespace-normal break-words line-clamp-2 "> {/* Cho phép xuống 2 dòng */}
                   {assignment.fileName}
                 </Text>
               </Tooltip>
               <div className="flex items-center gap-2">
-                <ClockCircleOutlined className="text-xs flex-shrink-0" />
-                <Text type="secondary" className="text-xs">
+                <ClockCircleOutlined className="text-xs flex-shrink-0 text-black" />
+                <Text type="secondary" className="text-xs text-black">
                   {new Date(assignment.uploadDate).toLocaleDateString('vi-VN')} {/* Định dạng ngày kiểu VN */}
                 </Text>
               </div>
