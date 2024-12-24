@@ -76,7 +76,7 @@ const Navbar = () => {
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Link to="/" style={{ color: '#1890ff', textDecoration: 'none' }}>
           <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
-            CopyCheck
+            PlagiarismGuard
           </h1>
         </Link>
       </div>

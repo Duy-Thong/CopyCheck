@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Card, Form, Input, Button, message, Typography, Avatar, Space, Divider } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import { ref, get, set } from 'firebase/database';
-import { updatePassword, updateEmail } from 'firebase/auth';
+import { updatePassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { database } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
@@ -41,6 +41,15 @@ const AccountManagement = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
+      // Reauthenticate user if password is being changed
+      if (values.newPassword) {
+        const credential = EmailAuthProvider.credential(
+          currentUser.email,
+          values.currentPassword
+        );
+        await reauthenticateWithCredential(currentUser, credential);
+      }
+
       // Update display name in database
       if (values.displayName !== userData.displayName) {
         await set(ref(database, `users/${currentUser.uid}/displayName`), values.displayName);
@@ -58,8 +67,13 @@ const AccountManagement = () => {
 
       message.success('Profile updated successfully');
       loadUserData();
+      form.resetFields(['currentPassword', 'newPassword', 'confirmPassword']);
     } catch (error) {
-      message.error(`Failed to update profile: ${error.message}`);
+      if (error.code === 'auth/wrong-password') {
+        message.error('Current password is incorrect');
+      } else {
+        message.error(`Failed to update profile: ${error.message}`);
+      }
       console.error(error);
     } finally {
       setLoading(false);
@@ -132,6 +146,24 @@ const AccountManagement = () => {
                   <Input 
                     prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} 
                     placeholder="Email"
+                    size="large"
+                    style={{ borderRadius: '8px' }}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="currentPassword"
+                  label={<Text strong>Current Password</Text>}
+                  rules={[
+                    ({ getFieldValue }) => ({
+                      required: !!getFieldValue('newPassword'),
+                      message: 'Please input your current password before changing to a new one!',
+                    }),
+                  ]}
+                >
+                  <Input.Password 
+                    prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
+                    placeholder="Enter current password"
                     size="large"
                     style={{ borderRadius: '8px' }}
                   />
