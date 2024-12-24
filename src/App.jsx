@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ClassAssignments from './pages/ClassAssignments';
 import SubmitAssignment from './pages/SubmitAssignment';
+import AccountManagement from './pages/AccountManagement';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
               <ClassAssignments />
             </PrivateRoute>
           } />
-          
+          <Route path='/account' element={ <AccountManagement/> } /> 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/submit" element={<SubmitAssignment />} />

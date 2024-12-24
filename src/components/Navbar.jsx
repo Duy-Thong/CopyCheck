@@ -1,14 +1,34 @@
-import React from 'react';
-import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Dropdown, Avatar, Space } from 'antd';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogoutOutlined, HomeOutlined, UserOutlined } from '@ant-design/icons';
-
+import { LogoutOutlined, UserOutlined, SettingOutlined } from '@ant-design/icons';
+import { ref, get } from 'firebase/database';
+import { database } from '../firebase/config';
 const { Header } = Layout;
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadUserData();
+    }
+  }, [currentUser]);
+
+  const loadUserData = async () => {
+    try {
+      const userRef = ref(database, `users/${currentUser.uid}`);
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        setUserData(snapshot.val());
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -19,47 +39,61 @@ const Navbar = () => {
     }
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="account" onClick={() => navigate('/account')}>Quản lý tài khoản</Menu.Item>
-      <Menu.Item key="logout" onClick={handleLogout}>Đăng xuất</Menu.Item>
-    </Menu>
-  );
-
-  const items = [
+  const menuItems = [
     {
-      key: 'home',
-      icon: <HomeOutlined />, 
-      label: 'Home',
-      onClick: () => navigate('/'),
+      key: 'account',
+      icon: <SettingOutlined />,
+      label: 'Quản lý tài khoản',
+      onClick: () => navigate('/account'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Đăng xuất',
+      onClick: handleLogout,
+      danger: true,
     },
   ];
 
   return (
-    <Header style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'space-between',
-      background: '#fff',
-      padding: '0 24px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{ 
-        display: 'flex', 
+    <Header
+      style={{
+        display: 'flex',
         alignItems: 'center',
-        gap: '24px'
-      }}>
+        justifyContent: 'space-between',
+        background: '#fff',
+        padding: '0 24px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        width: '100%',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <Link to="/" style={{ color: '#1890ff', textDecoration: 'none' }}>
-          <h1 style={{ margin: 0, fontSize: '20px', color: '#1890ff' }}>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
             CopyCheck
           </h1>
         </Link>
-        
       </div>
+
       {currentUser && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Dropdown overlay={menu} trigger={['click']}>
-            <Avatar size="large" icon={<UserOutlined />} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
+            <Space style={{ cursor: 'pointer', padding: '0 8px' }}>
+              <Avatar
+                style={{ backgroundColor: '#1890ff' }}
+                icon={<UserOutlined />}
+                src={userData?.photoURL}
+              />
+              <span style={{ color: '#666' }}>
+                {currentUser.displayName || currentUser.email}
+              </span>
+            </Space>
           </Dropdown>
         </div>
       )}
