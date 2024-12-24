@@ -81,158 +81,149 @@ const AccountManagement = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)' }}>
+    <Layout className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <Navbar />
-      <Content style={{ padding: '40px 24px' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <Card
-            style={{
-              borderRadius: '15px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-              border: 'none',
-            }}
-          >
-            <Space direction="vertical" style={{ width: '100%' }} size="large">
-              <div style={{ textAlign: 'center' }}>
+      <Content className="p-4 sm:p-6 md:p-8 lg:p-10">
+        <div className="max-w-3xl mx-auto">
+          <Card className="rounded-3xl shadow-xl border-none backdrop-blur-sm bg-white/90">
+            <Space direction="vertical" className="w-full" size={32}>
+              {/* Profile Header Section */}
+              <div className="text-center relative">
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-3xl -mt-6 -mx-6" />
                 <Avatar 
-                  size={100} 
+                  size={120} 
                   icon={<UserOutlined />}
                   src={userData?.photoURL}
-                  style={{ 
-                    border: '4px solid #fff',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  }}
+                  className="border-4 border-white shadow-lg relative mt-8"
                 />
-                <Title level={2} style={{ 
-                  marginTop: 24,
-                  fontSize: '28px',
-                  fontWeight: 600,
-                  color: '#1a1a1a'
-                }}>
-                  Account Settings
+                <Title level={2} className="mt-4 text-2xl font-bold text-gray-800">
+                  {userData?.displayName || 'Account Settings'}
                 </Title>
+                <Text className="text-gray-500">Manage your account information</Text>
               </div>
 
-              <Divider style={{ margin: '24px 0' }} />
+              <Divider className="my-0" />
 
+              {/* Form Section */}
               <Form
                 form={form}
                 layout="vertical"
                 onFinish={onFinish}
                 requiredMark={false}
-                style={{ padding: '0 20px' }}
+                className="px-4 md:px-8"
               >
-                <Form.Item
-                  name="displayName"
-                  label={<Text strong>Display Name</Text>}
-                  rules={[{ required: true, message: 'Please input your display name!' }]}
-                >
-                  <Input 
-                    prefix={<UserOutlined style={{ color: '#bfbfbf' }} />} 
-                    placeholder="Display Name"
-                    size="large"
-                    style={{ borderRadius: '8px' }}
-                  />
-                </Form.Item>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item
+                    name="displayName"
+                    label={<Text className="text-gray-700 font-medium">Display Name</Text>}
+                    rules={[{ required: true, message: 'Please input your display name!' }]}
+                  >
+                    <Input 
+                      prefix={<UserOutlined className="text-blue-400" />} 
+                      placeholder="Display Name"
+                      size="large"
+                      className="rounded-lg hover:border-blue-400 focus:border-blue-500 transition-colors"
+                    />
+                  </Form.Item>
 
-                <Form.Item
-                  name="email"
-                  label={<Text strong>Email</Text>}
-                  rules={[
-                    { required: true, message: 'Please input your email!' },
-                    { type: 'email', message: 'Please enter a valid email!' }
-                  ]}
-                >
-                  <Input 
-                    prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} 
-                    placeholder="Email"
-                    size="large"
-                    style={{ borderRadius: '8px' }}
-                  />
-                </Form.Item>
+                  <Form.Item
+                    name="email"
+                    label={<Text className="text-gray-700 font-medium">Email</Text>}
+                    rules={[
+                      { required: true, message: 'Please input your email!' },
+                      { type: 'email', message: 'Please enter a valid email!' }
+                    ]}
+                  >
+                    <Input 
+                      prefix={<MailOutlined className="text-blue-400" />} 
+                      placeholder="Email"
+                      size="large"
+                      className="rounded-lg hover:border-blue-400 focus:border-blue-500 transition-colors"
+                    />
+                  </Form.Item>
+                </div>
 
-                <Form.Item
-                  name="currentPassword"
-                  label={<Text strong>Current Password</Text>}
-                  rules={[
-                    ({ getFieldValue }) => ({
-                      required: !!getFieldValue('newPassword'),
-                      message: 'Please input your current password before changing to a new one!',
-                    }),
-                  ]}
-                >
-                  <Input.Password 
-                    prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
-                    placeholder="Enter current password"
-                    size="large"
-                    style={{ borderRadius: '8px' }}
-                  />
-                </Form.Item>
+                <div className="mt-6 bg-gray-50 p-6 rounded-2xl space-y-6">
+                  <Text className="block text-lg font-semibold text-gray-700 mb-4">
+                    Change Password
+                  </Text>
+                  
+                  <Form.Item
+                    name="currentPassword"
+                    label={<Text className="text-gray-700 font-medium">Current Password</Text>}
+                    rules={[
+                      ({ getFieldValue }) => ({
+                        required: !!getFieldValue('newPassword'),
+                        message: 'Please input your current password before changing to a new one!',
+                      }),
+                    ]}
+                  >
+                    <Input.Password 
+                      prefix={<LockOutlined className="text-blue-400" />} 
+                      placeholder="Enter current password"
+                      size="large"
+                      className="rounded-lg"
+                    />
+                  </Form.Item>
 
-                <Form.Item
-                  name="newPassword"
-                  label={<Text strong>New Password</Text>}
-                  rules={[
-                    { min: 6, message: 'Password must be at least 6 characters!' }
-                  ]}
-                >
-                  <Input.Password 
-                    prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
-                    placeholder="Leave blank to keep current password"
-                    size="large"
-                    style={{ borderRadius: '8px' }}
-                  />
-                </Form.Item>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Form.Item
+                      name="newPassword"
+                      label={<Text className="text-gray-700 font-medium">New Password</Text>}
+                      rules={[{ min: 6, message: 'Password must be at least 6 characters!' }]}
+                    >
+                      <Input.Password 
+                        prefix={<LockOutlined className="text-blue-400" />} 
+                        placeholder="New password"
+                        size="large"
+                        className="rounded-lg"
+                      />
+                    </Form.Item>
 
-                <Form.Item
-                  name="confirmPassword"
-                  label={<Text strong>Confirm New Password</Text>}
-                  dependencies={['newPassword']}
-                  rules={[
-                    ({ getFieldValue }) => ({
-                      validator(_, value) {
-                        if (!value || getFieldValue('newPassword') === value) {
-                          return Promise.resolve();
-                        }
-                        return Promise.reject('Passwords do not match!');
-                      },
-                    }),
-                  ]}
-                >
-                  <Input.Password 
-                    prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
-                    placeholder="Confirm new password"
-                    size="large"
-                    style={{ borderRadius: '8px' }}
-                  />
-                </Form.Item>
+                    <Form.Item
+                      name="confirmPassword"
+                      label={<Text className="text-gray-700 font-medium">Confirm Password</Text>}
+                      dependencies={['newPassword']}
+                      rules={[
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('newPassword') === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject('Passwords do not match!');
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input.Password 
+                        prefix={<LockOutlined className="text-blue-400" />} 
+                        placeholder="Confirm password"
+                        size="large"
+                        className="rounded-lg"
+                      />
+                    </Form.Item>
+                  </div>
+                </div>
 
-                <Form.Item style={{ marginTop: '32px' }}>
+                <Form.Item className="mt-8">
                   <Button 
                     type="primary" 
                     htmlType="submit" 
                     loading={loading}
                     block
                     size="large"
-                    style={{
-                      height: '48px',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      fontWeight: 500,
-                      background: 'linear-gradient(90deg, #1890ff 0%, #096dd9 100%)',
-                      border: 'none',
-                    }}
+                    className="h-12 rounded-lg text-base font-medium bg-gradient-to-r from-blue-500 to-indigo-600 border-none hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Update Profile
+                    Save Changes
                   </Button>
                 </Form.Item>
               </Form>
 
-              <Divider style={{ margin: '24px 0' }} />
+              <Divider className="my-0" />
 
-              <div style={{ textAlign: 'center', padding: '0 20px' }}>
-                <Text type="secondary" style={{ fontSize: '14px' }}>
-                  Account created: {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
+              <div className="text-center">
+                <Text type="secondary" className="text-sm">
+                  Member since {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
                 </Text>
               </div>
             </Space>

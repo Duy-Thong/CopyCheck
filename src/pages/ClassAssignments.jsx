@@ -471,10 +471,10 @@ const ClassAssignments = () => {
   const renderCompareModal = () => (
     <Modal
       title={
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="flex justify-between items-center">
           <div>
             <span>Compare Assignments</span>
-            <Text type="secondary" style={{ marginLeft: '8px', fontSize: '14px' }}>
+            <Text type="secondary" className="ml-2 text-sm">
               Similarity: {selectedAssignment?.similarityRatio ? 
                 `${Math.round(selectedAssignment.similarityRatio * 100)}%` : 'N/A'}
             </Text>
@@ -483,7 +483,7 @@ const ClassAssignments = () => {
             type="text"
             onClick={toggleSyncScrolling}
             icon={<SwapOutlined />}
-            style={{ color: syncScrolling ? '#1890ff' : '#999' }}
+            className={syncScrolling ? 'text-blue-500' : 'text-gray-500'}
           >
             {syncScrolling ? 'Sync ON' : 'Sync OFF'}
           </Button>
@@ -495,50 +495,38 @@ const ClassAssignments = () => {
       style={{ top: 20 }}
       footer={null}
     >
-      <div style={{ display: 'flex', height: '85vh', gap: '16px' }}>
+      <div className="flex h-[85vh] gap-4">
         {/* Original Assignment PDF */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ marginBottom: '8px' }}>
-            <Title level={4} style={{ margin: 0 }}>{selectedAssignment?.fileName}</Title>
+        <div className="flex-1 flex flex-col">
+          <div className="mb-2">
+            <Title level={4} className="m-0">{selectedAssignment?.fileName}</Title>
             <Text type="secondary">Current Assignment</Text>
           </div>
           <div 
-            className="pdf-container"
+            className="pdf-container flex-1 border border-gray-300 rounded overflow-auto"
             onScroll={(e) => syncScrolling && handleSyncScroll(e, 'left')}
-            style={{ 
-              flex: 1, 
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              overflow: 'auto'
-            }}
           >
             <iframe
               src={selectedAssignment?.fileUrl}
-              style={{ width: '100%', height: '100%', border: 'none' }}
+              className="w-full h-full border-none"
               title="Original Assignment"
             />
           </div>
         </div>
 
         {/* Similar Assignment PDF */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ marginBottom: '8px' }}>
-            <Title level={4} style={{ margin: 0 }}>{comparedAssignment?.fileName}</Title>
+        <div className="flex-1 flex flex-col">
+          <div className="mb-2">
+            <Title level={4} className="m-0">{comparedAssignment?.fileName}</Title>
             <Text type="secondary">Similar Assignment</Text>
           </div>
           <div 
-            className="pdf-container"
+            className="pdf-container flex-1 border border-gray-300 rounded overflow-auto"
             onScroll={(e) => syncScrolling && handleSyncScroll(e, 'right')}
-            style={{ 
-              flex: 1, 
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              overflow: 'auto'
-            }}
           >
             <iframe
               src={comparedAssignment?.fileUrl}
-              style={{ width: '100%', height: '100%', border: 'none' }}
+              className="w-full h-full border-none"
               title="Similar Assignment"
             />
           </div>
@@ -549,20 +537,20 @@ const ClassAssignments = () => {
 
   const renderSimilarFilesTab = () => (
     <TabPane tab="Similar Files" key="similar">
-      <div style={{ padding: '16px' }}>
+      <div className="p-4">
         {selectedAssignment?.similarAssignmentId ? (
           <Card>
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space direction="vertical" className="w-full">
               <Text strong>Most Similar File:</Text>
-              <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
-                <Space direction="vertical" style={{ width: '100%' }}>
+              <div className="bg-gray-100 p-3 rounded">
+                <Space direction="vertical" className="w-full">
                   <div>
                     <Text>Filename: {selectedAssignment.similarFilename}</Text>
                   </div>
                   <div>
                     <Text type="secondary">ID: {selectedAssignment.similarAssignmentId}</Text>
                   </div>
-                  <Text type="warning" style={{ color: '#ff4d4f' }}>
+                  <Text type="warning" className="text-red-500">
                     Similarity: {Math.round(selectedAssignment.similarityRatio * 100)}%
                   </Text>
                   <Button 
@@ -575,7 +563,7 @@ const ClassAssignments = () => {
                 </Space>
               </div>
               {selectedAssignment.similarityRatio > 0.7 && (
-                <Text type="danger" style={{ marginTop: '8px' }}>
+                <Text type="danger" className="mt-2">
                   Warning: High similarity detected! Please review carefully.
                 </Text>
               )}
@@ -641,21 +629,20 @@ const ClassAssignments = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="min-h-screen">
       <Navbar />
-      <Content style={{ padding: '24px', background: '#f0f2f5' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <Content className="p-6 bg-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <Title level={2}>
+              <Title level={2} className="flex items-center">
                 {classData?.className || 'Class Assignments'} 
-                <Text type="secondary" style={{ fontSize: '16px', marginLeft: '12px' }}>
+                <Text type="secondary" className="text-base ml-3">
                   (Code: {classData?.classCode})
                 </Text>
               </Title>
               <Text type="secondary">{classData?.description}</Text>
             </div>
-            
             
             <Space>
               <Button 
@@ -686,7 +673,7 @@ const ClassAssignments = () => {
           </div>
 
           {/* Search, Filter, and Sort Controls */}
-          <Row gutter={16} style={{ marginBottom: 16 }} align="middle">
+          <Row gutter={16} className="mb-4" align="middle">
             <Col flex="200px">
               <Input
                 placeholder="Search by filename"
@@ -754,17 +741,9 @@ const ClassAssignments = () => {
             }}
             dataSource={filteredAssignments}
             loading={loading}
-            style={{ 
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'stretch'
-            }}
+            className="flex flex-col items-stretch"
             renderItem={(item) => (
-              <List.Item style={{ 
-                display: 'flex',
-                justifyContent: 'center',
-                margin: 0
-              }}>
+              <List.Item className="flex justify-center m-0">
                 <AssignmentCard
                   assignment={item}
                   onDelete={handleDelete}
@@ -793,37 +772,33 @@ const ClassAssignments = () => {
                 feedback: '',
                 notes: ''
               }}
+              className="space-y-4"
             >
               <Tabs defaultActiveKey="content">
                 {/* Add new Submitter Info tab before existing tabs */}
                 <TabPane tab="Submitter Info" key="submitter">
-                  <div style={{ padding: '16px' }}>
+                  <div className="p-4">
                     <Card>
-                      <Space direction="vertical" style={{ width: '100%' }}>
-                        <div style={{ marginBottom: '16px' }}>
-                          <Text strong style={{ fontSize: '16px' }}>
+                      <Space direction="vertical" className="w-full">
+                        <div className="mb-4">
+                          <Text strong className="text-base">
                             Submission Details
                           </Text>
                         </div>
                         
                         {selectedAssignment?.submitter ? (
                           <>
-                            <div style={{ 
-                              background: '#f5f5f5', 
-                              padding: '16px', 
-                              borderRadius: '8px',
-                              marginBottom: '16px'
-                            }}>
-                              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                            <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                              <Space direction="vertical" size="small" className="w-full">
                                 <div>
                                   <Text type="secondary">Role:</Text>
-                                  <Text strong style={{ marginLeft: '8px' }}>
+                                  <Text strong className="ml-2">
                                     {selectedAssignment.submitter.role === 'student' ? '👨‍🎓 Student' : '👨‍🏫 Teacher'}
                                   </Text>
                                 </div>
                                 <div>
                                   <Text type="secondary">Name:</Text>
-                                  <Text strong style={{ marginLeft: '8px' }}>
+                                  <Text strong className="ml-2">
                                     {selectedAssignment.submitter.role === 'student' 
                                       ? selectedAssignment.submitter.name
                                       : selectedAssignment.submitter.name}
@@ -832,14 +807,14 @@ const ClassAssignments = () => {
                                 {selectedAssignment.submitter.role === 'student' && (
                                   <div>
                                     <Text type="secondary">Student ID:</Text>
-                                    <Text strong style={{ marginLeft: '8px' }}>
+                                    <Text strong className="ml-2">
                                       {selectedAssignment.submitter.id}
                                     </Text>
                                   </div>
                                 )}
                                 <div>
                                   <Text type="secondary">Email:</Text>
-                                  <Text strong style={{ marginLeft: '8px' }}>
+                                  <Text strong className="ml-2">
                                     {selectedAssignment.submitter.email}
                                   </Text>
                                 </div>
@@ -848,7 +823,7 @@ const ClassAssignments = () => {
                             
                             <div>
                               <Text type="secondary">Submitted on:</Text>
-                              <Text strong style={{ marginLeft: '8px' }}>
+                              <Text strong className="ml-2">
                                 {convertToVNTime(selectedAssignment.uploadDate)}
                               </Text>
                             </div>
@@ -863,7 +838,7 @@ const ClassAssignments = () => {
 
                 {/* Existing tabs */}
                 <TabPane tab="Content" key="content">
-                  <div style={{ maxHeight: '40vh', overflow: 'auto', padding: '16px', marginBottom: '16px' }}>
+                  <div className="max-h-[40vh] overflow-auto p-4 mb-4">
                     <Paragraph>{selectedAssignment?.extractedText}</Paragraph>
                   </div>
                 </TabPane>
@@ -873,7 +848,7 @@ const ClassAssignments = () => {
 
                 {/* Existing tabs */}
                 <TabPane tab="Grade & Feedback" key="grade">
-                  <Space direction="vertical" style={{ width: '100%', padding: '16px' }}>
+                  <Space direction="vertical" className="w-full p-4">
                     <Form.Item
                       name="grade"
                       label="Grade"
@@ -923,7 +898,7 @@ const ClassAssignments = () => {
                   </Space>
                 </TabPane>
                 <TabPane tab="Notes & Status" key="notes">
-                  <Space direction="vertical" style={{ width: '100%', padding: '16px' }}>
+                  <Space direction="vertical" className="w-full p-4">
                     <Form.Item
                       name="status"
                       label="Status"
@@ -949,7 +924,7 @@ const ClassAssignments = () => {
                 </TabPane>
               </Tabs>
 
-              <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0', textAlign: 'right' }}>
+              <div className="p-4 border-t border-gray-200 text-right">
                 <Space>
                   <Text type="secondary">
                     Last modified: {selectedAssignment?.lastModified 
@@ -1011,7 +986,7 @@ const ClassAssignments = () => {
             onCancel={handleClosePdfModal}
             footer={null}
           >
-            <iframe src={pdfUrl} style={{ width: '100%', height: '500px' }} frameBorder="0"></iframe>
+            <iframe src={pdfUrl} className="w-full h-[500px]" frameBorder="0"></iframe>
           </Modal>
 
           {/* Similarity Results */}

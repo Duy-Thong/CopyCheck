@@ -5,9 +5,10 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [],
-  important: true, // This ensures Tailwind classes override Ant Design styles
+  plugins: [
+    require('@tailwindcss/line-clamp'),
+  ],
   corePlugins: {
-    preflight: false, // This prevents Tailwind from overriding Ant Design base styles
+    preflight: false, // This prevents Tailwind from conflicting with Ant Design's base styles
   },
 }

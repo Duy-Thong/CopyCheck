@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Card, Button, Modal, Form, Input, message, List, Typography, Badge, Row, Col } from 'antd';
+import { Layout, Card, Button, Modal, Form, Input, message, List, Typography, Badge } from 'antd';
 import { PlusOutlined, DeleteOutlined, EditOutlined, FolderOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { ref, push, set, get, remove } from 'firebase/database';
@@ -17,16 +17,7 @@ const CLASS_CODE_LENGTH = 6;
 const StyledCard = ({ children, ...props }) => (
   <Card
     {...props}
-    style={{
-      width: '100%',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      border: 'none',
-      background: 'white',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-      transition: 'all 0.3s ease',
-      ...props.style,
-    }}
+    className="w-full rounded-xl overflow-hidden border border-slate-200 bg-white/70 backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-white/80"
     bodyStyle={{
       padding: '20px',
     }}
@@ -137,16 +128,17 @@ const Home = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="min-h-screen">
       <Navbar />
-      <Content style={{ padding: '24px', background: '#f8fafc' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <Content className="p-6 bg-gradient-to-tl from-blue-400 via-blue-200 to-blue-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
             <Title level={2}>My Classes</Title>
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => showModal()}
+              className="flex items-center"
             >
               Add New Class
             </Button>
@@ -169,73 +161,40 @@ const Home = () => {
                   hoverable
                   onClick={() => handleCardClick(item.id)}
                 >
-                  <div style={{ position: 'relative' }}>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        right: 0,
-                        display: 'flex',
-                        gap: '8px',
-                      }}
-                    >
+                  <div className="relative">
+                    <div className="absolute top-0 right-0 flex gap-2">
                       <Button
                         type="text"
-                        icon={<EditOutlined style={{ color: '#4B5563' }} />}
+                        icon={<EditOutlined className="text-slate-600 hover:text-slate-800" />}
                         onClick={(e) => {
                           e.stopPropagation();
                           showModal(item);
                         }}
-                        style={{ minWidth: 'auto', padding: '4px' }}
+                        className="min-w-0 p-1"
                       />
                       <Button
                         type="text"
-                        icon={<DeleteOutlined style={{ color: '#EF4444' }} />}
+                        icon={<DeleteOutlined className="text-red-500 hover:text-red-600" />}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(item.id);
                         }}
-                        style={{ minWidth: 'auto', padding: '4px' }}
+                        className="min-w-0 p-1"
                       />
                     </div>
                     
-                    <div style={{ marginBottom: '16px' }}>
-                      <div
-                        style={{
-                          background: 'linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)',
-                          borderRadius: '12px',
-                          width: '48px',
-                          height: '48px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginBottom: '16px',
-                        }}
-                      >
-                        <FolderOutlined style={{ fontSize: 24, color: '#0284C7' }} />
+                    <div className="mb-4">
+                      <div className="bg-blue-100 backdrop-blur-sm rounded-xl w-12 h-12 flex items-center justify-center mb-4">
+                        <FolderOutlined className="text-2xl text-blue-600" />
                       </div>
-                      <div style={{ marginBottom: '8px' }}>
-                        <Typography.Text
-                          style={{
-                            backgroundColor: '#E0F2FE',
-                            color: '#0284C7',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontFamily: 'monospace'
-                          }}
-                        >
+                      <div className="mb-2">
+                        <Typography.Text className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-mono text-xs">
                           {item.classCode}
                         </Typography.Text>
                       </div>
                       <Typography.Title 
                         level={4} 
-                        style={{ 
-                          margin: 0,
-                          fontSize: '18px',
-                          color: '#1E293B',
-                          width: '100%',
-                        }}
+                        className="m-0 text-lg text-slate-800"
                         ellipsis={{ 
                           tooltip: item.className 
                         }}
@@ -245,13 +204,7 @@ const Home = () => {
                     </div>
 
                     <Typography.Paragraph
-                      type="secondary"
-                      style={{ 
-                        margin: '0 0 16px 0',
-                        color: '#64748B',
-                        fontSize: '14px',
-                        lineHeight: '1.5'
-                      }}
+                      className="mb-4 text-slate-600 text-sm leading-relaxed"
                       ellipsis={{ 
                         rows: 2,
                         tooltip: item.description
@@ -260,30 +213,16 @@ const Home = () => {
                       {item.description}
                     </Typography.Paragraph>
 
-                    <div
-                      style={{
-                        background: '#F1F5F9',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px'
-                      }}
-                    >
+                    <div className="bg-slate-100 backdrop-blur-sm p-3 rounded-lg flex items-center gap-3">
                       <Badge 
                         count={item.submittedCount} 
+                        className="shadow-sm"
                         style={{ 
-                          backgroundColor: '#10B981',
-                          boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
+                          backgroundColor: '#3B82F6',
+                          color: 'white'
                         }}
                       />
-                      <Typography.Text
-                        style={{
-                          fontSize: '14px',
-                          color: '#64748B',
-                          margin: 0
-                        }}
-                      >
+                      <Typography.Text className="text-sm text-slate-600 m-0">
                         Submitted Assignments
                       </Typography.Text>
                     </div>
@@ -298,6 +237,7 @@ const Home = () => {
             open={isModalVisible}
             onCancel={handleCancel}
             footer={null}
+            className="rounded-lg"
           >
             <Form
               form={form}
