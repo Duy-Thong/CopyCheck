@@ -16,6 +16,13 @@ const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
 
+const convertToVNTime = (utcTimeString) => {
+  const date = new Date(utcTimeString);
+  return new Date(date.getTime() + 7 * 60 * 60 * 1000).toISOString()
+    .replace('T', ' ')
+    .replace('.000Z', '');
+};
+
 const ClassAssignments = () => {
   const { classId } = useParams();
   const { currentUser } = useAuth();
@@ -588,12 +595,13 @@ const ClassAssignments = () => {
         'No.': index + 1,
         'File Name': assignment.fileName,
         'Assignment ID': assignment.id,
-        'Upload Date': new Date(assignment.uploadDate).toLocaleDateString(),
-        'Grade': assignment.grade || 'Not graded',
+        'Upload Time': convertToVNTime(assignment.uploadDate),  // Changed this line
+        'Grade': assignment.grade/10 || 'Not graded',
         'Status': assignment.status,
         'Feedback': assignment.feedback || '',
         'Similarity': assignment.similarityRatio ? `${Math.round(assignment.similarityRatio * 100)}%` : 'N/A',
-        'Similar File ID': assignment.similarAssignmentId || 'None'
+        'Similar File ID': assignment.similarAssignmentId || 'None',
+        'Similar File': assignment.similarFilename || 'None'
       }));
 
       // Create workbook and worksheet
@@ -841,7 +849,7 @@ const ClassAssignments = () => {
                             <div>
                               <Text type="secondary">Submitted on:</Text>
                               <Text strong style={{ marginLeft: '8px' }}>
-                                {new Date(selectedAssignment.uploadDate).toLocaleString()}
+                                {convertToVNTime(selectedAssignment.uploadDate)}
                               </Text>
                             </div>
                           </>
@@ -945,7 +953,7 @@ const ClassAssignments = () => {
                 <Space>
                   <Text type="secondary">
                     Last modified: {selectedAssignment?.lastModified 
-                      ? new Date(selectedAssignment.lastModified).toLocaleString()
+                      ? convertToVNTime(selectedAssignment.lastModified)
                       : 'Never'}
                   </Text>
                   <Button type="primary" htmlType="submit">
