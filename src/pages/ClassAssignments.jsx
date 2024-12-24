@@ -772,7 +772,7 @@ const ClassAssignments = () => {
                 feedback: '',
                 notes: ''
               }}
-              className="space-y-4"
+              className="space-y-4 "
             >
               <Tabs defaultActiveKey="content">
                 {/* Add new Submitter Info tab before existing tabs */}

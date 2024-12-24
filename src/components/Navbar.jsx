@@ -60,37 +60,36 @@ const Navbar = () => {
 
   return (
     <Header
+      className="flex items-center justify-between bg-white sticky top-0 z-10 w-full shadow-sm"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: '#fff',
-        padding: '0 70px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1,
-        width: '100%',
+        padding: '0 16px', // Mobile padding
+        '@media (min-width: 640px)': {
+          padding: '0 24px',
+        },
+        '@media (min-width: 1024px)': {
+          padding: '0 70px',
+        },
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Link to="/" style={{ color: '#1890ff', textDecoration: 'none' }}>
-          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
+      <div className="flex items-center">
+        <Link to="/" className="text-blue-500 no-underline">
+          <h1 className="m-0 text-lg sm:text-xl lg:text-2xl font-bold truncate">
             PlagiarismGuard
           </h1>
         </Link>
       </div>
 
       {currentUser && (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="flex items-center">
           <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-            <Space style={{ cursor: 'pointer', padding: '0 8px' }}>
+            <Space className="cursor-pointer px-2 sm:px-4">
               <Avatar
-                style={{ backgroundColor: '#1890ff' }}
+                className="bg-blue-500"
                 icon={<UserOutlined />}
                 src={userData?.photoURL}
+                size={{ xs: 32, sm: 36, md: 40 }}
               />
-              <span style={{ color: '#666' }}>
+              <span className="hidden sm:inline text-gray-600">
                 {currentUser.displayName || currentUser.email}
               </span>
             </Space>

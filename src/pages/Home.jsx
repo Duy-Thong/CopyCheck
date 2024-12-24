@@ -17,9 +17,12 @@ const CLASS_CODE_LENGTH = 6;
 const StyledCard = ({ children, ...props }) => (
   <Card
     {...props}
-    className="w-full  overflow-hidden   glassmorphism"
+    className="w-full overflow-hidden glassmorphism"
     bodyStyle={{
-      padding: '20px',
+      padding: '12px', // Reduced padding for mobile
+      '@media (min-width: 640px)': {
+        padding: '20px',
+      },
     }}
   >
     {children}
@@ -130,15 +133,15 @@ const Home = () => {
   return (
     <Layout className="min-h-screen">
       <Navbar />
-      <Content className="p-6 bg-gradient-to-tl from-blue-400 via-blue-200 to-blue-100">
+      <Content className="p-3 sm:p-6 bg-gradient-to-tl from-blue-400 via-blue-200 to-blue-100">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <Title level={2}>My Classes</Title>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
+            <Title level={2} className="text-xl sm:text-2xl m-0">My Classes</Title>
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => showModal()}
-              className="flex items-center"
+              className="flex items-center w-full sm:w-auto justify-center"
             >
               Add New Class
             </Button>
@@ -146,9 +149,9 @@ const Home = () => {
 
           <List
             grid={{
-              gutter: 24,
+              gutter: [16, 16],
               xs: 1,
-              sm: 2,
+              sm: 1,
               md: 2,
               lg: 3,
               xl: 3,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Card, Row, Col, Typography, Statistic, Space, Progress, Tabs } from 'antd';
+import { Layout, Typography, Tabs, Statistic, Space, Progress } from 'antd';
 import { PieChart, Pie, BarChart, Bar, Cell, ResponsiveContainer, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useParams } from 'react-router-dom';
 import { ref, get } from 'firebase/database';
@@ -141,218 +141,190 @@ const ClassStatistics = () => {
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
       <Navbar />
-      <Content style={{ padding: '24px', background: '#f0f2f5' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-          {/* Header with improved styling */}
-          <Card className="statistics-header" style={{ marginBottom: 24, background: '#1890ff' }}>
-            <Title level={2} style={{ color: 'white', margin: 0 }}>
+      <Content className="p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="glass rounded-xl p-6 mb-6 glassmorphism">
+            <Title level={2} className="text-white m-0">
               {classData?.className || 'Class'} Statistics
-              <Text style={{ fontSize: '16px', marginLeft: '12px', color: 'rgba(255,255,255,0.85)' }}>
+              <Text className="text-base ml-3 opacity-85">
                 (Code: {classData?.classCode})
               </Text>
             </Title>
-          </Card>
+          </div>
 
-          {/* Summary Cards with improved styling */}
-          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Total Assignments"
-                  value={stats.total}
-                  prefix={<FileTextOutlined />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Pending Review"
-                  value={stats.pending}
-                  prefix={<ClockCircleOutlined style={{ color: '#faad14' }} />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Reviewed"
-                  value={stats.reviewed}
-                  prefix={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Card>
-                <Statistic
-                  title="Flagged"
-                  value={stats.flagged}
-                  prefix={<WarningOutlined style={{ color: '#ff4d4f' }} />}
-                />
-              </Card>
-            </Col>
-          </Row>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-5 glassmorphism ">
+            <div className="glass rounded-xl p-6 transition-all hover:scale-105">
+              <Statistic
+                title={<span className="text-black">Total Assignments</span>}
+                value={stats.total}
+                prefix={<FileTextOutlined className="text-black" />}
+                valueStyle={{ color: 'black' }}
+              />
+            </div>
+            <div className="glass rounded-xl p-6 transition-all hover:scale-105">
+              <Statistic
+                title={<span className="text-black">Pending Review</span>}
+                value={stats.pending}
+                prefix={<ClockCircleOutlined className="text-black" />}
+                valueStyle={{ color: 'black' }}
+              />
+            </div>
+            <div className="glass rounded-xl p-6 transition-all hover:scale-105 ">
+              <Statistic
+                title={<span className="text-black">Reviewed</span>}
+                value={stats.reviewed}
+                prefix={<CheckCircleOutlined className="text-black" />}
+                valueStyle={{ color: 'black' }}
+              />
+            </div>
+            <div className="glass rounded-xl p-6 transition-all hover:scale-105">
+              <Statistic
+                title={<span className="text-black">Flagged</span>}
+                value={stats.flagged}
+                prefix={<WarningOutlined className="text-black" />}
+                valueStyle={{ color: 'black' }}
+              />
+            </div>
+          </div>
 
-          <Tabs defaultActiveKey="1" style={{ marginBottom: 24 }}>
-            <TabPane tab="Grade Analysis" key="1">
-              <Row gutter={[16, 16]}>
-                <Col xs={24} lg={12}>
-                  <Card title="Grade Distribution" bordered={false}>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={gradeDistributionData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          label
-                        >
-                          {gradeDistributionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-                <Col xs={24} lg={12}>
-                  <Card title="Grade Summary" bordered={false}>
-                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <Title level={4}>Grade Summary</Title>
-                      <Space direction="vertical" style={{ width: '100%' }}>
-                        <Text>Total Graded: {assignments.filter(a => a.grade != null).length}</Text>
-                        <Text>Ungraded: {assignments.filter(a => a.grade == null).length}</Text>
-                        <Text>Highest Grade: {Math.max(...assignments.map(a => a.grade || 0))}%</Text>
-                        <Text>Lowest Grade: {Math.min(...assignments.filter(a => a.grade != null).map(a => a.grade))}%</Text>
-                      </Space>
+          {/* Tabs Section */}
+          <div className="glass rounded-xl p-6  glassmorphism">
+            <Tabs 
+              defaultActiveKey="1"
+              className="text-black "
+              items={[
+                {
+                  key: '1',
+                  label: 'Grade Analysis',
+                  children: (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="glass rounded-xl p-6">
+                        <h3 className="text-black mb-4">Grade Distribution</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <PieChart>
+                            <Pie
+                              data={gradeDistributionData}
+                              dataKey="value"
+                              nameKey="name"
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={80}
+                              label
+                            >
+                              {gradeDistributionData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="glass rounded-xl p-6">
+                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                          <Title level={4} className="text-black">Grade Summary</Title>
+                          <Space direction="vertical" style={{ width: '100%' }}>
+                            <Text className="text-black">Total Graded: {assignments.filter(a => a.grade != null).length}</Text>
+                            <Text className="text-black">Ungraded: {assignments.filter(a => a.grade == null).length}</Text>
+                            <Text className="text-black">Highest Grade: {Math.max(...assignments.map(a => a.grade || 0))}%</Text>
+                            <Text className="text-black">Lowest Grade: {Math.min(...assignments.filter(a => a.grade != null).map(a => a.grade))}%</Text>
+                          </Space>
+                        </div>
+                      </div>
                     </div>
-                  </Card>
-                </Col>
-              </Row>
-            </TabPane>
-
-            <TabPane tab="Similarity Analysis" key="2">
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Card title="Similarity Distribution" bordered={false}>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <BarChart data={similarityChartData}>
-                        <Bar dataKey="value">
-                          {similarityChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                        <Tooltip />
-                        <Legend />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-              </Row>
-            </TabPane>
-
-            <TabPane tab="Submission Timing" key="3">
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Card title="Submission Timeline" bordered={false}>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={submissionTimelineData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="name" 
-                          angle={-45}
-                          textAnchor="end"
-                          height={60}
+                  ),
+                },
+                {
+                  key: '2',
+                  label: 'Similarity Analysis',
+                  children: (
+                    <div className="glass rounded-xl p-6">
+                      <h3 className="text-black mb-4">Similarity Distribution</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={similarityChartData}>
+                          <Bar dataKey="value">
+                            {similarityChartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                          <Tooltip />
+                          <Legend />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ),
+                },
+                {
+                  key: '3',
+                  label: 'Submission Timing',
+                  children: (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="glass rounded-xl p-6">
+                        <h3 className="text-black mb-4">Submission Timeline</h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <LineChart data={submissionTimelineData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="name" 
+                              angle={-45}
+                              textAnchor="end"
+                              height={60}
+                              className="text-black"
+                            />
+                            <YAxis className="text-black" />
+                            <Tooltip />
+                            <Line 
+                              type="monotone" 
+                              dataKey="submissions" 
+                              stroke="#1890ff"
+                              strokeWidth={2}
+                              dot={{ fill: data => data.color }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="glass rounded-xl p-6">
+                        <Statistic
+                          title={<span className="text-black">On-time Submissions</span>}
+                          value={stats.onTime}
+                          suffix={`/ ${stats.total}`}
+                          valueStyle={{ color: 'black' }}
                         />
-                        <YAxis />
-                        <Tooltip />
-                        <Line 
-                          type="monotone" 
-                          dataKey="submissions" 
-                          stroke="#1890ff"
-                          strokeWidth={2}
-                          dot={{ fill: data => data.color }}
+                        <Progress 
+                          percent={Math.round((stats.onTime / stats.total) * 100)} 
+                          strokeColor="#52c41a"
+                          strokeWidth={10}
+                          status="active"
                         />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Col>
-                <Col xs={24} lg={12}>
-                  <Card bordered={false}>
-                    <Statistic
-                      title="On-time Submissions"
-                      value={stats.onTime}
-                      suffix={`/ ${stats.total}`}
-                      valueStyle={{ color: '#52c41a' }}
-                    />
-                    <Progress 
-                      percent={Math.round((stats.onTime / stats.total) * 100)} 
-                      strokeColor="#52c41a"
-                      strokeWidth={10}
-                      status="active"
-                    />
-                  </Card>
-                </Col>
-                <Col xs={24} lg={12}>
-                  <Card bordered={false}>
-                    <Statistic
-                      title="Late Submissions"
-                      value={stats.late}
-                      suffix={`/ ${stats.total}`}
-                      valueStyle={{ color: '#ff4d4f' }}
-                    />
-                    <Progress 
-                      percent={Math.round((stats.late / stats.total) * 100)} 
-                      strokeColor="#ff4d4f"
-                      strokeWidth={10}
-                      status="active"
-                    />
-                  </Card>
-                </Col>
-              </Row>
-            </TabPane>
-          </Tabs>
+                      </div>
+                      <div className="glass rounded-xl p-6">
+                        <Statistic
+                          title={<span className="text-black">Late Submissions</span>}
+                          value={stats.late}
+                          suffix={`/ ${stats.total}`}
+                          valueStyle={{ color: 'black' }}
+                        />
+                        <Progress 
+                          percent={Math.round((stats.late / stats.total) * 100)} 
+                          strokeColor="#ff4d4f"
+                          strokeWidth={10}
+                          status="active"
+                        />
+                      </div>
+                    </div>
+                  ),
+                },
+              ]}
+            />
+          </div>
         </div>
       </Content>
     </Layout>
   );
 };
-
-// Add these styles to your CSS
-const styles = `
-.statistics-header {
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.ant-card {
-  border-radius: 8px;
-  transition: all 0.3s;
-}
-
-.ant-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.ant-tabs-nav {
-  margin-bottom: 16px;
-}
-
-.ant-progress-circle {
-  transition: all 0.3s;
-}
-
-.ant-progress-circle:hover {
-  transform: scale(1.05);
-}
-`;
 
 export default ClassStatistics;
