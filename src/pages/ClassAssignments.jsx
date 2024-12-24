@@ -107,10 +107,8 @@ const ClassAssignments = () => {
         }
       });
 
-      // Save assignment data to database with similarity results
-      const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments`);
-      const newAssignmentId = push(assignmentsRef).key;
-      const assignmentData = {
+      // Create submission data with submitter information
+      const submissionData = {
         fileName: file.name,
         uploadDate: new Date().toISOString(),
         extractedText: text,
@@ -120,19 +118,29 @@ const ClassAssignments = () => {
         feedback: '',
         lastModified: new Date().toISOString(),
         similarFilename: mostSimilarFile,
-        similarityRatio: highestSimilarity
+        similarityRatio: highestSimilarity,
+        submitter: {
+          role: 'teacher', // Assuming this is teacher's upload
+          name: currentUser.displayName || 'Unknown Teacher',
+          email: currentUser.email,
+          id: currentUser.uid
+        }
       };
 
       // Upload PDF to Vercel Blob
       const pdfBuffer = await file.arrayBuffer();
-      const { url } = await put(`CopyCheck/${file.name}`, pdfBuffer, { access: 'public', token:"vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A" });
-      console.log('File uploaded to:', url);
-
-      // Save the URL to Firebase DB
-      await set(ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${newAssignmentId}`), {
-        ...assignmentData,
-        fileUrl: url // Add the file URL here
+      const { url } = await put(`submissions/${file.name}`, pdfBuffer, { 
+        access: 'public', 
+        token: "vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A" 
       });
+      
+      // Add file URL to submission data
+      submissionData.fileUrl = url;
+
+      // Save to Firebase DB
+      const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments`);
+      const newAssignmentId = push(assignmentsRef).key;
+      await set(ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${newAssignmentId}`), submissionData);
 
       message.success('Assignment uploaded and processed successfully');
       loadAssignments();
@@ -705,6 +713,73 @@ const ClassAssignments = () => {
               }}
             >
               <Tabs defaultActiveKey="content">
+                {/* Add new Submitter Info tab before existing tabs */}
+                <TabPane tab="Submitter Info" key="submitter">
+                  <div style={{ padding: '16px' }}>
+                    <Card>
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <div style={{ marginBottom: '16px' }}>
+                          <Text strong style={{ fontSize: '16px' }}>
+                            Submission Details
+                          </Text>
+                        </div>
+                        
+                        {selectedAssignment?.submitter ? (
+                          <>
+                            <div style={{ 
+                              background: '#f5f5f5', 
+                              padding: '16px', 
+                              borderRadius: '8px',
+                              marginBottom: '16px'
+                            }}>
+                              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                <div>
+                                  <Text type="secondary">Role:</Text>
+                                  <Text strong style={{ marginLeft: '8px' }}>
+                                    {selectedAssignment.submitter.role === 'student' ? '👨‍🎓 Student' : '👨‍🏫 Teacher'}
+                                  </Text>
+                                </div>
+                                <div>
+                                  <Text type="secondary">Name:</Text>
+                                  <Text strong style={{ marginLeft: '8px' }}>
+                                    {selectedAssignment.submitter.role === 'student' 
+                                      ? selectedAssignment.submitter.name
+                                      : selectedAssignment.submitter.name}
+                                  </Text>
+                                </div>
+                                {selectedAssignment.submitter.role === 'student' && (
+                                  <div>
+                                    <Text type="secondary">Student ID:</Text>
+                                    <Text strong style={{ marginLeft: '8px' }}>
+                                      {selectedAssignment.submitter.id}
+                                    </Text>
+                                  </div>
+                                )}
+                                <div>
+                                  <Text type="secondary">Email:</Text>
+                                  <Text strong style={{ marginLeft: '8px' }}>
+                                    {selectedAssignment.submitter.email}
+                                  </Text>
+                                </div>
+                              </Space>
+                            </div>
+                            
+                            <div>
+                              <Text type="secondary">Submitted on:</Text>
+                              <Text strong style={{ marginLeft: '8px' }}>
+                                {new Date(selectedAssignment.uploadDate).toLocaleString()}
+                              </Text>
+                            </div>
+                          </>
+                        ) : (
+                          <Empty description="No submitter information available" />
+                        )}
+                      </Space>
+                    </Card>
+                  </div>
+                </TabPane>
+
+                {/* Existing tabs */}
                 <TabPane tab="Content" key="content">
                   <div style={{ maxHeight: '40vh', overflow: 'auto', padding: '16px', marginBottom: '16px' }}>
                     <Paragraph>{selectedAssignment?.extractedText}</Paragraph>

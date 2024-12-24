@@ -100,18 +100,23 @@ const SubmitAssignment = () => {
         token: "vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A"
       });
 
-      // Create submission data
+      // Create submission data with student information
       const submissionData = {
-        studentName: values.studentName,
-        studentId: values.studentId,
-        email: values.email,
         fileName: selectedFile.name,
-        fileUrl: url,
         uploadDate: new Date().toISOString(),
-        status: 'Pending Review',
         extractedText: text,
+        notes: '',
+        status: 'Pending Review',
         grade: null,
         feedback: '',
+        lastModified: new Date().toISOString(),
+        fileUrl: url,
+        submitter: {
+          role: 'student',
+          name: values.studentName,
+          id: values.studentId,
+          email: values.email
+        }
       };
 
       // Save to teacher's assignments
