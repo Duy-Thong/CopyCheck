@@ -17,7 +17,7 @@ const CLASS_CODE_LENGTH = 6;
 const StyledCard = ({ children, ...props }) => (
   <Card
     {...props}
-    className="w-full rounded-xl overflow-hidden border border-slate-200 bg-white/70 backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-xl hover:bg-white/80"
+    className="w-full  overflow-hidden   glassmorphism"
     bodyStyle={{
       padding: '20px',
     }}
@@ -185,15 +185,15 @@ const Home = () => {
                     
                     <div className="mb-4">
                       <div className="bg-blue-100 backdrop-blur-sm rounded-xl w-12 h-12 flex items-center justify-center mb-4">
-                        <FolderOutlined className="text-2xl text-blue-600" />
+                        <FolderOutlined className="text-3xl text-blue-600" />
                       </div>
                       <div className="mb-2">
-                        <Typography.Text className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-mono text-xs">
+                        <Typography.Text className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-mono text-lg">
                           {item.classCode}
                         </Typography.Text>
                       </div>
                       <Typography.Title 
-                        level={4} 
+                        level={3} 
                         className="m-0 text-lg text-slate-800"
                         ellipsis={{ 
                           tooltip: item.className 

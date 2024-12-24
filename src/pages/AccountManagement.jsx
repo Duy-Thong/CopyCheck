@@ -81,11 +81,11 @@ const AccountManagement = () => {
   };
 
   return (
-    <Layout className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <Layout className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-400">
       <Navbar />
       <Content className="p-4 sm:p-6 md:p-8 lg:p-10">
         <div className="max-w-3xl mx-auto">
-          <Card className="rounded-3xl shadow-xl border-none backdrop-blur-sm bg-white/90">
+          <Card className="rounded-3xl shadow-xl border-none backdrop-blur-md bg-white/70 glassmorphism">
             <Space direction="vertical" className="w-full" size={32}>
               {/* Profile Header Section */}
               <div className="text-center relative">

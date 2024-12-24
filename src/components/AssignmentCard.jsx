@@ -23,7 +23,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
           ...style
         }}
         hoverable
-        className="w-full min-h-[180px] transition-all duration-300 hover:shadow-lg" // Tăng min-height
+        className="w-full min-h-[180px] glassmorphism" // Tăng min-height
         bodyStyle={{ padding: '16px' }} // Tăng padding
         onClick={(e) => {
           // Don't trigger card click if clicking on action buttons
