@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Form, Input, Button, Card, message, Upload, Space, Typography, Steps, Result } from 'antd';
-import { SearchOutlined, UploadOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, UploadOutlined, UserOutlined, BookOutlined, TeamOutlined, IdcardOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { ref, get, push, set } from 'firebase/database';
 import { database } from '../firebase/config';
 import { put } from '@vercel/blob';
@@ -35,14 +35,15 @@ const SubmitAssignment = () => {
 
       let foundClass = null;
       let foundTeacher = null;
+      let teacherId = null;
 
       // Duyệt qua từng giảng viên để tìm lớp
-      for (const [teacherId, teacher] of Object.entries(teachersSnapshot.val())) {
+      for (const [tid, teacher] of Object.entries(teachersSnapshot.val())) {
         if (teacher.classes) {
           for (const [classId, classInfo] of Object.entries(teacher.classes)) {
             if (classInfo.classCode === classCode) {
               foundClass = { ...classInfo, id: classId };
-              foundTeacher = { ...teacher, id: teacherId };
+              teacherId = tid;
               break;
             }
           }
@@ -50,11 +51,25 @@ const SubmitAssignment = () => {
         if (foundClass) break;
       }
 
-      if (foundClass && foundTeacher) {
-        setClassData(foundClass);
-        setTeacherData(foundTeacher);
-        setCurrentStep(1);
-        message.success('Class found!');
+      // Nếu tìm thấy lớp, lấy thông tin giáo viên từ users database
+      if (foundClass && teacherId) {
+        const userRef = ref(database, `users/${teacherId}`);
+        const userSnapshot = await get(userRef);
+        
+        if (userSnapshot.exists()) {
+          foundTeacher = {
+            ...userSnapshot.val(),
+            id: teacherId,
+            displayName: userSnapshot.val().displayName || 'Unknown Teacher'
+          };
+          
+          setClassData(foundClass);
+          setTeacherData(foundTeacher);
+          setCurrentStep(1);
+          message.success('Class found!');
+        } else {
+          message.error('Teacher information not found');
+        }
       } else {
         message.error('Class not found');
       }
@@ -136,12 +151,24 @@ const SubmitAssignment = () => {
               rules={[{ required: true, message: 'Please enter class code' }]}
             >
               <Input 
-                prefix={<SearchOutlined />}
+                prefix={<SearchOutlined style={{ color: '#1890ff' }} />}
                 placeholder="Enter class code"
                 size="large"
+                style={{ borderRadius: '8px' }}
               />
             </Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} block>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={loading} 
+              block
+              size="large"
+              style={{ 
+                height: '45px',
+                borderRadius: '8px',
+                marginTop: '16px'
+              }}
+            >
               Search Class
             </Button>
           </Form>
@@ -154,20 +181,43 @@ const SubmitAssignment = () => {
             onFinish={handleSubmit}
             layout="vertical"
           >
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              <div>
-                <Title level={4}>Class Information:</Title>
-                <Text>Class: {classData?.className}</Text>
-                <br />
-                <Text>Teacher: {teacherData?.name || 'Unknown'}</Text>
-              </div>
+            <Card 
+              className="class-info"
+              style={{ 
+                marginBottom: '24px',
+                borderRadius: '8px',
+                borderLeft: '4px solid #1890ff'
+              }}
+            >
+              <Space direction="vertical" size="small">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BookOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                  <Text strong>Class: {classData?.className}</Text>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <TeamOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                  <Text strong>Teacher: {teacherData?.displayName}</Text>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <IdcardOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                  <Text strong>Class Code: {classData?.classCode}</Text>
+                </div>
+                <Text type="secondary" style={{ marginTop: '8px' }}>
+                  {classData?.description}
+                </Text>
+              </Space>
+            </Card>
 
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
               <Form.Item
                 name="studentName"
                 label="Full Name"
                 rules={[{ required: true, message: 'Please enter your name' }]}
               >
-                <Input prefix={<UserOutlined />} />
+                <Input 
+                  prefix={<UserOutlined style={{ color: '#1890ff' }} />}
+                  style={{ borderRadius: '8px' }}
+                />
               </Form.Item>
 
               <Form.Item
@@ -175,7 +225,7 @@ const SubmitAssignment = () => {
                 label="Student ID"
                 rules={[{ required: true, message: 'Please enter your student ID' }]}
               >
-                <Input />
+                <Input style={{ borderRadius: '8px' }} />
               </Form.Item>
 
               <Form.Item
@@ -186,7 +236,7 @@ const SubmitAssignment = () => {
                   { type: 'email', message: 'Please enter a valid email' }
                 ]}
               >
-                <Input />
+                <Input style={{ borderRadius: '8px' }} />
               </Form.Item>
 
               <Form.Item
@@ -195,11 +245,30 @@ const SubmitAssignment = () => {
                 rules={[{ required: true, message: 'Please upload your assignment' }]}
               >
                 <Upload {...uploadProps}>
-                  <Button icon={<UploadOutlined />}>Select File</Button>
+                  <Button 
+                    icon={<UploadOutlined />}
+                    style={{ 
+                      height: '45px',
+                      borderRadius: '8px',
+                      width: '100%'
+                    }}
+                  >
+                    Select File
+                  </Button>
                 </Upload>
               </Form.Item>
 
-              <Button type="primary" htmlType="submit" loading={loading} block>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading} 
+                block
+                size="large"
+                style={{ 
+                  height: '45px',
+                  borderRadius: '8px'
+                }}
+              >
                 Submit Assignment
               </Button>
             </Space>
@@ -210,17 +279,34 @@ const SubmitAssignment = () => {
         return (
           <Result
             status="success"
-            title="Assignment Submitted Successfully!"
-            subTitle={`Your assignment has been submitted to ${classData?.className}`}
+            title={
+              <Title level={3} style={{ color: '#52c41a' }}>
+                Assignment Submitted Successfully!
+              </Title>
+            }
+            subTitle={
+              <Text style={{ fontSize: '16px' }}>
+                Your assignment has been submitted to {classData?.className}
+              </Text>
+            }
             extra={[
-              <Button type="primary" key="new" onClick={() => {
-                setCurrentStep(0);
-                setClassData(null);
-                setTeacherData(null);
-                setSelectedFile(null);
-                setSubmitted(false);
-                form.resetFields();
-              }}>
+              <Button 
+                type="primary" 
+                key="new" 
+                size="large"
+                style={{ 
+                  height: '45px',
+                  borderRadius: '8px'
+                }}
+                onClick={() => {
+                  setCurrentStep(0);
+                  setClassData(null);
+                  setTeacherData(null);
+                  setSelectedFile(null);
+                  setSubmitted(false);
+                  form.resetFields();
+                }}
+              >
                 Submit Another Assignment
               </Button>
             ]}
@@ -231,29 +317,58 @@ const SubmitAssignment = () => {
 
   return (
     <Layout>
-      <Content style={{ padding: '50px 0', background: '#f0f2f5' }}>
+      <Content 
+        style={{ 
+          minHeight: '100vh',
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+          padding: '50px 20px'
+        }}
+      >
         <Card
           style={{
-            maxWidth: 600,
+            maxWidth: 800,
             margin: '0 auto',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            borderRadius: '15px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.12)'
           }}
         >
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2}>Submit Assignment</Title>
-              <Text type="secondary">
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <Title level={2} style={{ 
+                color: '#1890ff',
+                marginBottom: '8px',
+                fontWeight: 600
+              }}>
+                Submit Assignment
+              </Title>
+              <Text type="secondary" style={{ fontSize: '16px' }}>
                 Enter your class code to submit your assignment
               </Text>
             </div>
 
-            <Steps current={currentStep} style={{ marginBottom: 24 }}>
-              <Step title="Find Class" />
-              <Step title="Submit" />
-              <Step title="Done" />
+            <Steps 
+              current={currentStep} 
+              style={{ 
+                marginBottom: 32,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                padding: '24px',
+                borderRadius: '8px',
+                background: '#fff'
+              }}
+            >
+              <Step title="Find Class" icon={<BookOutlined />} />
+              <Step title="Submit" icon={<UploadOutlined />} />
+              <Step title="Done" icon={<CheckCircleOutlined />} />
             </Steps>
 
-            {renderStepContent()}
+            <div className="step-content" style={{ 
+              background: '#fff',
+              padding: '24px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+            }}>
+              {renderStepContent()}
+            </div>
           </Space>
         </Card>
       </Content>
