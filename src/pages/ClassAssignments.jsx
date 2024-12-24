@@ -96,6 +96,7 @@ const ClassAssignments = () => {
 
       // Find most similar existing assignment
       let mostSimilarFile = '';
+      let mostSimilarId = ''; // Add this line
       let highestSimilarity = 0;
 
       // Compare with existing assignments
@@ -104,11 +105,17 @@ const ClassAssignments = () => {
         if (similarity > highestSimilarity) {
           highestSimilarity = similarity;
           mostSimilarFile = assignment.fileName;
+          mostSimilarId = assignment.id; // Store the ID of the most similar assignment
         }
       });
 
-      // Create submission data with submitter information
+      // Generate a new assignment ID
+      const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments`);
+      const newAssignmentId = push(assignmentsRef).key;
+
+      // Create submission data with submitter information and ID
       const submissionData = {
+        id: newAssignmentId, // Add the ID to the submission data
         fileName: file.name,
         uploadDate: new Date().toISOString(),
         extractedText: text,
@@ -118,9 +125,10 @@ const ClassAssignments = () => {
         feedback: '',
         lastModified: new Date().toISOString(),
         similarFilename: mostSimilarFile,
+        similarAssignmentId: mostSimilarId, // Add ID reference
         similarityRatio: highestSimilarity,
         submitter: {
-          role: 'teacher', // Assuming this is teacher's upload
+          role: 'teacher',
           name: currentUser.displayName || 'Unknown Teacher',
           email: currentUser.email,
           id: currentUser.uid
@@ -137,9 +145,7 @@ const ClassAssignments = () => {
       // Add file URL to submission data
       submissionData.fileUrl = url;
 
-      // Save to Firebase DB
-      const assignmentsRef = ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments`);
-      const newAssignmentId = push(assignmentsRef).key;
+      // Save to Firebase DB using the generated ID
       await set(ref(database, `teachers/${currentUser.uid}/classes/${classId}/assignments/${newAssignmentId}`), submissionData);
 
       message.success('Assignment uploaded and processed successfully');
@@ -412,7 +418,7 @@ const ClassAssignments = () => {
   const showCompareModal = async (originalAssignment) => {
     try {
       const similarAssignment = assignments.find(
-        a => a.fileName === originalAssignment.similarFilename
+        a => a.id === originalAssignment.similarAssignmentId // Use ID instead of filename
       );
       
       if (similarAssignment) {
@@ -527,12 +533,13 @@ const ClassAssignments = () => {
       const exportData = filteredAssignments.map((assignment, index) => ({
         'No.': index + 1,
         'File Name': assignment.fileName,
+        'Assignment ID': assignment.id,
         'Upload Date': new Date(assignment.uploadDate).toLocaleDateString(),
         'Grade': assignment.grade || 'Not graded',
         'Status': assignment.status,
         'Feedback': assignment.feedback || '',
         'Similarity': assignment.similarityRatio ? `${Math.round(assignment.similarityRatio * 100)}%` : 'N/A',
-        'Similar File': assignment.similarFilename || 'None'
+        'Similar File ID': assignment.similarAssignmentId || 'None'
       }));
 
       // Create workbook and worksheet
@@ -977,6 +984,7 @@ const ClassAssignments = () => {
       </Content>
     </Layout>
   );
+
 };
 
 export default ClassAssignments;

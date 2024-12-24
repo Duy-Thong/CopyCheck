@@ -116,6 +116,7 @@ const SubmitAssignment = () => {
 
       // Find most similar existing assignment
       let mostSimilarFile = '';
+      let mostSimilarId = '';
       let highestSimilarity = 0;
 
       // Compare with existing assignments
@@ -124,6 +125,7 @@ const SubmitAssignment = () => {
         if (similarity > highestSimilarity) {
           highestSimilarity = similarity;
           mostSimilarFile = assignment.fileName;
+          mostSimilarId = assignment.id; // Store ID of most similar assignment
         }
       });
 
@@ -146,6 +148,7 @@ const SubmitAssignment = () => {
         lastModified: new Date().toISOString(),
         fileUrl: url,
         similarFilename: mostSimilarFile,
+        similarAssignmentId: mostSimilarId, // Store ID reference
         similarityRatio: highestSimilarity,
         submitter: {
           role: 'student',
