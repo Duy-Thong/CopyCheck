@@ -81,6 +81,19 @@ const SubmitAssignment = () => {
     }
   };
 
+  // Add similarity calculation function
+  const calculateSimilarity = (text1, text2) => {
+    const words1 = text1.split(/\W+/);
+    const words2 = text2.split(/\W+/);
+    const wordSet1 = new Set(words1);
+    const wordSet2 = new Set(words2);
+
+    const intersection = [...wordSet1].filter(word => wordSet2.has(word)).length;
+    const union = wordSet1.size + wordSet2.size - intersection;
+
+    return union === 0 ? 0 : intersection / union;
+  };
+
   const handleSubmit = async (values) => {
     try {
       setLoading(true);
@@ -93,6 +106,27 @@ const SubmitAssignment = () => {
       // Extract text from PDF
       const text = await pdfToText(selectedFile);
 
+      // Get existing assignments to check similarity
+      const assignmentsRef = ref(database, `teachers/${teacherData.id}/classes/${classData.id}/assignments`);
+      const assignmentsSnapshot = await get(assignmentsRef);
+      let assignments = [];
+      if (assignmentsSnapshot.exists()) {
+        assignments = Object.values(assignmentsSnapshot.val());
+      }
+
+      // Find most similar existing assignment
+      let mostSimilarFile = '';
+      let highestSimilarity = 0;
+
+      // Compare with existing assignments
+      assignments.forEach((assignment) => {
+        const similarity = calculateSimilarity(text, assignment.extractedText);
+        if (similarity > highestSimilarity) {
+          highestSimilarity = similarity;
+          mostSimilarFile = assignment.fileName;
+        }
+      });
+
       // Upload to Vercel Blob
       const pdfBuffer = await selectedFile.arrayBuffer();
       const { url } = await put(`submissions/${selectedFile.name}`, pdfBuffer, {
@@ -100,7 +134,7 @@ const SubmitAssignment = () => {
         token: "vercel_blob_rw_vuBTDxs1Af4OyipF_7ktfANNunJPJCY1OsqLo4fevvrPM6A"
       });
 
-      // Create submission data with student information
+      // Create submission data with student information and similarity results
       const submissionData = {
         fileName: selectedFile.name,
         uploadDate: new Date().toISOString(),
@@ -111,6 +145,8 @@ const SubmitAssignment = () => {
         feedback: '',
         lastModified: new Date().toISOString(),
         fileUrl: url,
+        similarFilename: mostSimilarFile,
+        similarityRatio: highestSimilarity,
         submitter: {
           role: 'student',
           name: values.studentName,
@@ -122,6 +158,11 @@ const SubmitAssignment = () => {
       // Save to teacher's assignments
       const submissionRef = push(ref(database, `teachers/${teacherData.id}/classes/${classData.id}/assignments`));
       await set(submissionRef, submissionData);
+
+      // Show warning if similarity is high
+      if (highestSimilarity > 0.7) {
+        message.warning('Warning: High similarity detected with existing submission!', 5);
+      }
 
       setSubmitted(true);
       setCurrentStep(2);
