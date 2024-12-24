@@ -6,6 +6,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ClassAssignments from './pages/ClassAssignments';
+import SubmitAssignment from './pages/SubmitAssignment';
+
 function App() {
   return (
     <Router>
@@ -21,8 +23,10 @@ function App() {
               <ClassAssignments />
             </PrivateRoute>
           } />
+          
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/submit" element={<SubmitAssignment />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>

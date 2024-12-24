@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe, DatePicker } from 'antd';
-import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined } from '@ant-design/icons';
+import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { ref, push, set, get, remove } from 'firebase/database';
 import { database } from '../firebase/config';
@@ -9,6 +9,7 @@ import Navbar from '../components/Navbar';
 import pdfToText from 'react-pdftotext';
 import { put, del } from '@vercel/blob';
 import AssignmentCard from '../components/AssignmentCard';
+import * as XLSX from 'xlsx';
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -512,6 +513,51 @@ const ClassAssignments = () => {
     </Modal>
   );
 
+  const exportGrades = () => {
+    try {
+      // Prepare data for export
+      const exportData = filteredAssignments.map((assignment, index) => ({
+        'No.': index + 1,
+        'File Name': assignment.fileName,
+        'Upload Date': new Date(assignment.uploadDate).toLocaleDateString(),
+        'Grade': assignment.grade || 'Not graded',
+        'Status': assignment.status,
+        'Feedback': assignment.feedback || '',
+        'Similarity': assignment.similarityRatio ? `${Math.round(assignment.similarityRatio * 100)}%` : 'N/A',
+        'Similar File': assignment.similarFilename || 'None'
+      }));
+
+      // Create workbook and worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Grades");
+
+      // Auto-size columns
+      const colWidths = [
+        { wch: 5 },  // No.
+        { wch: 30 }, // File Name
+        { wch: 12 }, // Upload Date
+        { wch: 8 },  // Grade
+        { wch: 15 }, // Status
+        { wch: 40 }, // Feedback
+        { wch: 12 }, // Similarity
+        { wch: 30 }, // Similar File
+      ];
+      ws['!cols'] = colWidths;
+
+      // Generate filename with class name and date
+      const date = new Date().toISOString().split('T')[0];
+      const fileName = `${classData?.className || 'Class'}_Grades_${date}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, fileName);
+      message.success('Grades exported successfully');
+    } catch (error) {
+      console.error('Export error:', error);
+      message.error('Failed to export grades');
+    }
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Navbar />
@@ -530,7 +576,13 @@ const ClassAssignments = () => {
             
             
             <Space>
-              
+              <Button 
+                icon={<DownloadOutlined />}
+                onClick={exportGrades}
+                disabled={filteredAssignments.length === 0}
+              >
+                Export Grades
+              </Button>
               <Upload {...uploadProps}>
                 <Button 
                   type="primary" 
