@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import ClassAssignments from './pages/ClassAssignments';
 import SubmitAssignment from './pages/SubmitAssignment';
 import AccountManagement from './pages/AccountManagement';
+import ClassStatistics from './pages/ClassStatistics';
 
 function App() {
   return (
@@ -28,6 +29,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/submit" element={<SubmitAssignment />} />
+          <Route path="/class/:classId/statistics" element={
+            <PrivateRoute>
+              <ClassStatistics />
+            </PrivateRoute>
+          } />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </AuthProvider>

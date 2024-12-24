@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe, DatePicker } from 'antd';
-import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined, DownloadOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined, DownloadOutlined, BarChartOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ref, push, set, get, remove } from 'firebase/database';
 import { database } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,6 +19,7 @@ const { RangePicker } = DatePicker;
 const ClassAssignments = () => {
   const { classId } = useParams();
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [filteredAssignments, setFilteredAssignments] = useState([]);
   const [classData, setClassData] = useState(null);
@@ -626,6 +627,11 @@ const ClassAssignments = () => {
     }
   };
 
+  // Add this function to handle navigation to statistics page
+  const handleNavigateToStats = () => {
+    navigate(`/class/${classId}/statistics`);
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Navbar />
@@ -644,6 +650,14 @@ const ClassAssignments = () => {
             
             
             <Space>
+              <Button 
+                icon={<BarChartOutlined />}
+                onClick={handleNavigateToStats}
+                type="primary"
+                ghost
+              >
+                View Statistics
+              </Button>
               <Button 
                 icon={<DownloadOutlined />}
                 onClick={exportGrades}
