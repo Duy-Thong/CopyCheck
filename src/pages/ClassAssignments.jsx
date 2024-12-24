@@ -417,12 +417,22 @@ const ClassAssignments = () => {
 
   const showCompareModal = async (originalAssignment) => {
     try {
+      // Log để debug
+      console.log('Original Assignment:', originalAssignment);
+      console.log('Looking for similar assignment with ID:', originalAssignment.similarAssignmentId);
+      console.log('All assignments:', assignments);
+
+      // Tìm bài tập tương tự bằng ID
       const similarAssignment = assignments.find(
-        a => a.id === originalAssignment.similarAssignmentId // Use ID instead of filename
+        a => a.id === originalAssignment.similarAssignmentId
       );
-      
+
+      console.log('Found similar assignment:', similarAssignment);
+
       if (similarAssignment) {
-        setComparedAssignment(similarAssignment);
+        // Cập nhật state cho modal
+        setSelectedAssignment(originalAssignment); // Bài gốc
+        setComparedAssignment(similarAssignment); // Bài tương tự
         setIsCompareModalVisible(true);
       } else {
         message.error('Could not find the similar assignment for comparison');
@@ -454,7 +464,13 @@ const ClassAssignments = () => {
     <Modal
       title={
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Compare Assignments</span>
+          <div>
+            <span>Compare Assignments</span>
+            <Text type="secondary" style={{ marginLeft: '8px', fontSize: '14px' }}>
+              Similarity: {selectedAssignment?.similarityRatio ? 
+                `${Math.round(selectedAssignment.similarityRatio * 100)}%` : 'N/A'}
+            </Text>
+          </div>
           <Button
             type="text"
             onClick={toggleSyncScrolling}
@@ -474,7 +490,10 @@ const ClassAssignments = () => {
       <div style={{ display: 'flex', height: '85vh', gap: '16px' }}>
         {/* Original Assignment PDF */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Title level={4}>{selectedAssignment?.fileName}</Title>
+          <div style={{ marginBottom: '8px' }}>
+            <Title level={4} style={{ margin: 0 }}>{selectedAssignment?.fileName}</Title>
+            <Text type="secondary">Current Assignment</Text>
+          </div>
           <div 
             className="pdf-container"
             onScroll={(e) => syncScrolling && handleSyncScroll(e, 'left')}
@@ -485,22 +504,20 @@ const ClassAssignments = () => {
               overflow: 'auto'
             }}
           >
-            <object
-              data={selectedAssignment?.fileUrl}
-              type="application/pdf"
-              style={{ 
-                width: '100%',
-                height: '100%'
-              }}
-            >
-              <p>Unable to display PDF. <a href={selectedAssignment?.fileUrl} target="_blank" rel="noopener noreferrer">Download</a> instead.</p>
-            </object>
+            <iframe
+              src={selectedAssignment?.fileUrl}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Original Assignment"
+            />
           </div>
         </div>
 
         {/* Similar Assignment PDF */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <Title level={4}>{comparedAssignment?.fileName}</Title>
+          <div style={{ marginBottom: '8px' }}>
+            <Title level={4} style={{ margin: 0 }}>{comparedAssignment?.fileName}</Title>
+            <Text type="secondary">Similar Assignment</Text>
+          </div>
           <div 
             className="pdf-container"
             onScroll={(e) => syncScrolling && handleSyncScroll(e, 'right')}
@@ -511,20 +528,56 @@ const ClassAssignments = () => {
               overflow: 'auto'
             }}
           >
-            <object
-              data={comparedAssignment?.fileUrl}
-              type="application/pdf"
-              style={{ 
-                width: '100%',
-                height: '100%'
-              }}
-            >
-              <p>Unable to display PDF. <a href={comparedAssignment?.fileUrl} target="_blank" rel="noopener noreferrer">Download</a> instead.</p>
-            </object>
+            <iframe
+              src={comparedAssignment?.fileUrl}
+              style={{ width: '100%', height: '100%', border: 'none' }}
+              title="Similar Assignment"
+            />
           </div>
         </div>
       </div>
     </Modal>
+  );
+
+  const renderSimilarFilesTab = () => (
+    <TabPane tab="Similar Files" key="similar">
+      <div style={{ padding: '16px' }}>
+        {selectedAssignment?.similarAssignmentId ? (
+          <Card>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Text strong>Most Similar File:</Text>
+              <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <div>
+                    <Text>Filename: {selectedAssignment.similarFilename}</Text>
+                  </div>
+                  <div>
+                    <Text type="secondary">ID: {selectedAssignment.similarAssignmentId}</Text>
+                  </div>
+                  <Text type="warning" style={{ color: '#ff4d4f' }}>
+                    Similarity: {Math.round(selectedAssignment.similarityRatio * 100)}%
+                  </Text>
+                  <Button 
+                    type="primary" 
+                    icon={<SwapOutlined />}
+                    onClick={() => showCompareModal(selectedAssignment)}
+                  >
+                    Compare Files
+                  </Button>
+                </Space>
+              </div>
+              {selectedAssignment.similarityRatio > 0.7 && (
+                <Text type="danger" style={{ marginTop: '8px' }}>
+                  Warning: High similarity detected! Please review carefully.
+                </Text>
+              )}
+            </Space>
+          </Card>
+        ) : (
+          <Empty description="No similar files found" />
+        )}
+      </div>
+    </TabPane>
   );
 
   const exportGrades = () => {
@@ -794,39 +847,7 @@ const ClassAssignments = () => {
                 </TabPane>
 
                 {/* Add new Similar Files tab */}
-                <TabPane tab="Similar Files" key="similar">
-                  <div style={{ padding: '16px' }}>
-                    {selectedAssignment?.similarFilename ? (
-                      <Card>
-                        <Space direction="vertical" style={{ width: '100%' }}>
-                          <Text strong>Most Similar File:</Text>
-                          <div style={{ background: '#f5f5f5', padding: '12px', borderRadius: '4px' }}>
-                            <Space direction="vertical" style={{ width: '100%' }}>
-                              <Text>{selectedAssignment.similarFilename}</Text>
-                              <Text type="warning" style={{ color: '#ff4d4f' }}>
-                                Similarity: {Math.round(selectedAssignment.similarityRatio * 100)}%
-                              </Text>
-                              <Button 
-                                type="primary" 
-                                icon={<SwapOutlined />}
-                                onClick={() => showCompareModal(selectedAssignment)}
-                              >
-                                Compare Files
-                              </Button>
-                            </Space>
-                          </div>
-                          {selectedAssignment.similarityRatio > 0.7 && (
-                            <Text type="danger">
-                              Warning: High similarity detected!
-                            </Text>
-                          )}
-                        </Space>
-                      </Card>
-                    ) : (
-                      <Empty description="No similar files found" />
-                    )}
-                  </div>
-                </TabPane>
+                {renderSimilarFilesTab()}
 
                 {/* Existing tabs */}
                 <TabPane tab="Grade & Feedback" key="grade">
