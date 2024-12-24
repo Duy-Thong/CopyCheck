@@ -200,10 +200,10 @@ const SubmitAssignment = () => {
               rules={[{ required: true, message: 'Please enter class code' }]}
             >
               <Input 
-                prefix={<SearchOutlined style={{ color: '#1890ff' }} />}
+                prefix={<SearchOutlined className="text-blue-500" />}
                 placeholder="Enter class code"
                 size="large"
-                style={{ borderRadius: '8px' }}
+                className="rounded-lg"
               />
             </Form.Item>
             <Button 
@@ -212,11 +212,7 @@ const SubmitAssignment = () => {
               loading={loading} 
               block
               size="large"
-              style={{ 
-                height: '45px',
-                borderRadius: '8px',
-                marginTop: '16px'
-              }}
+              className="h-12 rounded-lg mt-4"
             >
               Search Class
             </Button>
@@ -230,42 +226,35 @@ const SubmitAssignment = () => {
             onFinish={handleSubmit}
             layout="vertical"
           >
-            <Card 
-              className="class-info"
-              style={{ 
-                marginBottom: '24px',
-                borderRadius: '8px',
-                borderLeft: '4px solid #1890ff'
-              }}
-            >
+            <Card className="mb-6 rounded-lg border-l-4 border-l-blue-500">
               <Space direction="vertical" size="small">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <BookOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                <div className="flex items-center gap-2">
+                  <BookOutlined className="text-blue-500 text-lg" />
                   <Text strong>Class: {classData?.className}</Text>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <TeamOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                <div className="flex items-center gap-2">
+                  <TeamOutlined className="text-blue-500 text-lg" />
                   <Text strong>Teacher: {teacherData?.displayName}</Text>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <IdcardOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+                <div className="flex items-center gap-2">
+                  <IdcardOutlined className="text-blue-500 text-lg" />
                   <Text strong>Class Code: {classData?.classCode}</Text>
                 </div>
-                <Text type="secondary" style={{ marginTop: '8px' }}>
+                <Text type="secondary" className="mt-2">
                   {classData?.description}
                 </Text>
               </Space>
             </Card>
 
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <Space direction="vertical" size="large" className="w-full">
               <Form.Item
                 name="studentName"
                 label="Full Name"
                 rules={[{ required: true, message: 'Please enter your name' }]}
               >
                 <Input 
-                  prefix={<UserOutlined style={{ color: '#1890ff' }} />}
-                  style={{ borderRadius: '8px' }}
+                  prefix={<UserOutlined className="text-blue-500" />}
+                  className="rounded-lg"
                 />
               </Form.Item>
 
@@ -274,7 +263,7 @@ const SubmitAssignment = () => {
                 label="Student ID"
                 rules={[{ required: true, message: 'Please enter your student ID' }]}
               >
-                <Input style={{ borderRadius: '8px' }} />
+                <Input className="rounded-lg" />
               </Form.Item>
 
               <Form.Item
@@ -285,7 +274,7 @@ const SubmitAssignment = () => {
                   { type: 'email', message: 'Please enter a valid email' }
                 ]}
               >
-                <Input style={{ borderRadius: '8px' }} />
+                <Input className="rounded-lg" />
               </Form.Item>
 
               <Form.Item
@@ -296,11 +285,7 @@ const SubmitAssignment = () => {
                 <Upload {...uploadProps}>
                   <Button 
                     icon={<UploadOutlined />}
-                    style={{ 
-                      height: '45px',
-                      borderRadius: '8px',
-                      width: '100%'
-                    }}
+                    className="h-12 rounded-lg w-full"
                   >
                     Select File
                   </Button>
@@ -313,10 +298,7 @@ const SubmitAssignment = () => {
                 loading={loading} 
                 block
                 size="large"
-                style={{ 
-                  height: '45px',
-                  borderRadius: '8px'
-                }}
+                className="h-12 rounded-lg"
               >
                 Submit Assignment
               </Button>
@@ -329,12 +311,12 @@ const SubmitAssignment = () => {
           <Result
             status="success"
             title={
-              <Title level={3} style={{ color: '#52c41a' }}>
+              <Title level={3} className="text-green-500">
                 Assignment Submitted Successfully!
               </Title>
             }
             subTitle={
-              <Text style={{ fontSize: '16px' }}>
+              <Text className="text-base">
                 Your assignment has been submitted to {classData?.className}
               </Text>
             }
@@ -343,10 +325,7 @@ const SubmitAssignment = () => {
                 type="primary" 
                 key="new" 
                 size="large"
-                style={{ 
-                  height: '45px',
-                  borderRadius: '8px'
-                }}
+                className="h-12 rounded-lg"
                 onClick={() => {
                   setCurrentStep(0);
                   setClassData(null);
@@ -366,56 +345,28 @@ const SubmitAssignment = () => {
 
   return (
     <Layout>
-      <Content 
-        style={{ 
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-          padding: '50px 20px'
-        }}
-      >
-        <Card
-          style={{
-            maxWidth: 800,
-            margin: '0 auto',
-            borderRadius: '15px',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.12)'
-          }}
-        >
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <Title level={2} style={{ 
-                color: '#1890ff',
-                marginBottom: '8px',
-                fontWeight: 600
-              }}>
+      <Content className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 py-12 px-4">
+        <Card className="max-w-3xl mx-auto rounded-2xl shadow-lg">
+          <Space direction="vertical" size="large" className="w-full">
+            <div className="text-center mb-5">
+              <Title level={2} className="text-blue-500 mb-2 font-semibold">
                 Submit Assignment
               </Title>
-              <Text type="secondary" style={{ fontSize: '16px' }}>
+              <Text type="secondary" className="text-base">
                 Enter your class code to submit your assignment
               </Text>
             </div>
 
             <Steps 
               current={currentStep} 
-              style={{ 
-                marginBottom: 32,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                padding: '24px',
-                borderRadius: '8px',
-                background: '#fff'
-              }}
+              className="mb-8 shadow-sm p-6 rounded-lg bg-white"
             >
               <Step title="Find Class" icon={<BookOutlined />} />
               <Step title="Submit" icon={<UploadOutlined />} />
               <Step title="Done" icon={<CheckCircleOutlined />} />
             </Steps>
 
-            <div className="step-content" style={{ 
-              background: '#fff',
-              padding: '24px',
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-            }}>
+            <div className="bg-white p-6 rounded-lg shadow-sm">
               {renderStepContent()}
             </div>
           </Space>
