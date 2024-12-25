@@ -731,13 +731,13 @@ const ClassAssignments = () => {
 
           <List
             grid={{
-              gutter: [16, 16], // Equal horizontal and vertical spacing
-              xs: 1,
-              sm: 1,
-              md: 2,
-              lg: 3,
-              xl: 3,
-              xxl: 3, // Changed from 4 to 3 for better consistency
+              gutter: [16, 16],
+              xs: 1,    // 1 card per row on extra small screens
+              sm: 2,    // 2 cards per row on small screens
+              md: 3,    // 3 cards per row on medium screens
+              lg: 4,    // 4 cards per row on large screens
+              xl: 4,    // 4 cards per row on extra large screens
+              xxl: 4,   // 4 cards per row on extra extra large screens
             }}
             dataSource={filteredAssignments}
             loading={loading}

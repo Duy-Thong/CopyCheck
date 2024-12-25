@@ -19,12 +19,21 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
       <Card
         style={{
           width: '100%',
-          height: '100%',
+          height: '250px', // Fixed height for all cards
+          display: 'flex',
+          flexDirection: 'column',
+          maxWidth: '100%', // Ensure card doesn't overflow its container
           ...style
         }}
         hoverable
-        className="w-full min-h-[180px] glassmorphism [&_.ant-card-actions]:!bg-transparent" // Added transparent background for actions
-        bodyStyle={{ padding: '16px' }} // Tăng padding
+        className="w-full glassmorphism [&_.ant-card-actions]:!bg-transparent [&_.ant-card-actions]:!h-[40px]" // Added fixed height for actions
+        bodyStyle={{ 
+          padding: '16px',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          height: 'calc(100% - 40px)' // Subtract actions height from total height
+        }} // Tăng padding
         onClick={(e) => {
           // Don't trigger card click if clicking on action buttons
           if (e.target.closest('.ant-card-actions')) return;
@@ -65,7 +74,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
       >
         <div className="flex flex-col h-full justify-between gap-3"> {/* Thêm justify-between và gap */}
           {/* Header with Filename */}
-          <div className="flex items-start gap-3"> {/* Tăng gap */}
+          <div className="flex items-start gap-3 flex-grow"> {/* Tăng gap */}
             <FileTextOutlined className="text-xl mt-1 text-blue-500 flex-shrink-0" /> {/* Tăng kích thước icon */}
             <div className="flex-1 min-w-0 space-y-2"> {/* Thêm space-y-2 để tạo khoảng cách dọc */}
               <Tooltip title={assignment.fileName}>
@@ -83,7 +92,7 @@ const AssignmentCard = ({ assignment, onDelete, onViewPdf, onCardClick, style })
           </div>
 
           {/* Tags Section - Điều chỉnh layout */}
-          <div className="flex flex-wrap gap-2"> {/* Tăng gap giữa các tag */}
+          <div className="flex flex-wrap gap-2 mt-auto"> {/* Tăng gap giữa các tag */}
             <Tooltip title={`Status: ${assignment.status}`}>
               <Tag 
                 color={assignment.status === 'Flagged' ? 'red' : 
