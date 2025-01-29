@@ -89,7 +89,7 @@ const AccountManagement = () => {
             <Space direction="vertical" className="w-full" size={32}>
               {/* Profile Header Section */}
               <div className="text-center relative">
-                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-3xl -mt-6 -mx-6" />
+                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-blue-300 to-cyan-500 rounded-t-3xl -mt-6 -mx-6" />
                 <Avatar 
                   size={120} 
                   icon={<UserOutlined />}
@@ -99,7 +99,6 @@ const AccountManagement = () => {
                 <Title level={2} className="mt-4 text-2xl font-bold text-gray-800">
                   {userData?.displayName || 'Account Settings'}
                 </Title>
-                <Text className="text-gray-500">Manage your account information</Text>
               </div>
 
               <Divider className="my-0" />
@@ -115,7 +114,7 @@ const AccountManagement = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Form.Item
                     name="displayName"
-                    label={<Text className="text-gray-700 font-medium">Display Name</Text>}
+                    label={<Text className="text-gray-700 font-medium">Tên tài khoản</Text>}
                     rules={[{ required: true, message: 'Please input your display name!' }]}
                   >
                     <Input 
@@ -145,12 +144,12 @@ const AccountManagement = () => {
 
                 <div className="mt-6 bg-gray-50 p-6 rounded-2xl space-y-6">
                   <Text className="block text-lg font-semibold text-gray-700 mb-4">
-                    Change Password
+                    Đổi mật khẩu
                   </Text>
                   
                   <Form.Item
                     name="currentPassword"
-                    label={<Text className="text-gray-700 font-medium">Current Password</Text>}
+                    label={<Text className="text-gray-700 font-medium">Mật khẩu hiện tại</Text>}
                     rules={[
                       ({ getFieldValue }) => ({
                         required: !!getFieldValue('newPassword'),
@@ -160,7 +159,7 @@ const AccountManagement = () => {
                   >
                     <Input.Password 
                       prefix={<LockOutlined className="text-blue-400" />} 
-                      placeholder="Enter current password"
+                      placeholder="Nhập mật khẩu hiện tại"
                       size="large"
                       className="rounded-lg"
                     />
@@ -169,12 +168,12 @@ const AccountManagement = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Form.Item
                       name="newPassword"
-                      label={<Text className="text-gray-700 font-medium">New Password</Text>}
-                      rules={[{ min: 6, message: 'Password must be at least 6 characters!' }]}
+                      label={<Text className="text-gray-700 font-medium">Mật khẩu mới</Text>}
+                      rules={[{ min: 6, message: 'Mật khẩu phải dài hơn 6 ký tự!' }]}
                     >
                       <Input.Password 
                         prefix={<LockOutlined className="text-blue-400" />} 
-                        placeholder="New password"
+                        placeholder="Mật khẩu mới"
                         size="large"
                         className="rounded-lg"
                       />
@@ -182,7 +181,7 @@ const AccountManagement = () => {
 
                     <Form.Item
                       name="confirmPassword"
-                      label={<Text className="text-gray-700 font-medium">Confirm Password</Text>}
+                      label={<Text className="text-gray-700 font-medium">Nhập lại mật khẩu mới</Text>}
                       dependencies={['newPassword']}
                       rules={[
                         ({ getFieldValue }) => ({
@@ -197,7 +196,7 @@ const AccountManagement = () => {
                     >
                       <Input.Password 
                         prefix={<LockOutlined className="text-blue-400" />} 
-                        placeholder="Confirm password"
+                        placeholder="Nhập lại mật khẩu mới"
                         size="large"
                         className="rounded-lg"
                       />
@@ -214,7 +213,7 @@ const AccountManagement = () => {
                     size="large"
                     className="h-12 rounded-lg text-base font-medium bg-gradient-to-r from-blue-500 to-indigo-600 border-none hover:from-blue-600 hover:to-indigo-700 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Save Changes
+                    Cập nhật
                   </Button>
                 </Form.Item>
               </Form>
@@ -223,7 +222,7 @@ const AccountManagement = () => {
 
               <div className="text-center">
                 <Text type="secondary" className="text-sm">
-                  Member since {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
+                  Đăng ký từ {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : 'N/A'}
                 </Text>
               </div>
             </Space>
