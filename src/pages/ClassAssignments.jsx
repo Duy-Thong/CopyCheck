@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe, DatePicker } from 'antd';
+import { Layout, List, Upload, Button, message, Typography, Card, Modal, Form, Input, Popconfirm, Tabs, Space, Select, Row, Col, Empty, Iframe, DatePicker, Progress, Radio } from 'antd';
 import { UploadOutlined, FileTextOutlined, EditOutlined, DeleteOutlined, SwapOutlined, SearchOutlined, FilterOutlined, SortAscendingOutlined, DownloadOutlined, BarChartOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ref, push, set, get, remove } from 'firebase/database';
@@ -10,6 +10,9 @@ import pdfToText from 'react-pdftotext';
 import { put, del } from '@vercel/blob';
 import AssignmentCard from '../components/AssignmentCard';
 import * as XLSX from 'xlsx';
+import { createWorker } from 'tesseract.js';
+import * as pdfjs from 'pdfjs-dist';
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const { Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -50,6 +53,8 @@ const ClassAssignments = () => {
   const [isCompareModalVisible, setIsCompareModalVisible] = useState(false);
   const [comparedAssignment, setComparedAssignment] = useState(null);
   const [syncScrolling, setSyncScrolling] = useState(true);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [extractionMethod, setExtractionMethod] = useState('normal'); // 'normal' or 'ocr'
 
   useEffect(() => {
     loadClassData();
@@ -95,12 +100,86 @@ const ClassAssignments = () => {
     }
   };
 
+  const extractTextFromPdf = async (file) => {
+    try {
+      if (extractionMethod === 'ocr') {
+        message.info('Using OCR to extract text...');
+        return await processScannedPdf(file);
+      }
+
+      // Try normal PDF text extraction first
+      const text = await pdfToText(file);
+      
+      // If normal method fails and auto-fallback is needed
+      if (!text || text.trim().length === 0) {
+        message.info('Standard extraction failed, attempting OCR...');
+        return await processScannedPdf(file);
+      }
+      
+      return text;
+    } catch (error) {
+      console.error('Text extraction failed:', error);
+      message.error('Text extraction failed');
+      throw error;
+    }
+  };
+
+  const processScannedPdf = async (file) => {
+    const pdfData = await file.arrayBuffer();
+    const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
+    let fullText = '';
+
+    // Create Tesseract worker
+    const worker = await createWorker({
+      logger: progress => {
+        if (progress.status === 'recognizing text') {
+          setOcrProgress(parseInt((progress.progress * 100).toFixed(0)));
+        }
+      }
+    });
+
+    await worker.loadLanguage('vie+eng');
+    await worker.initialize('vie+eng');
+
+    // Process each page
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 2.0 });
+      
+      // Create canvas and context
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      // Render PDF page to canvas
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
+
+      // Convert canvas to image data
+      const imageData = canvas.toDataURL('image/png');
+      
+      // Perform OCR on the image
+      const { data: { text } } = await worker.recognize(imageData);
+      fullText += text + '\n';
+
+      message.info(`Processing page ${i} of ${pdf.numPages}`);
+    }
+
+    await worker.terminate();
+    setOcrProgress(0);
+    
+    return fullText;
+  };
+
   const handleUpload = async (file) => {
     try {
       setUploading(true);
 
-      // Extract text from PDF using pdfToText
-      const text = await pdfToText(file);
+      // Extract text using OCR if needed
+      const text = await extractTextFromPdf(file);
 
       // Find most similar existing assignment
       let mostSimilarFile = '';
@@ -290,6 +369,17 @@ const ClassAssignments = () => {
     },
     showUploadList: false,
   };
+
+  const ExtractionMethodSelector = () => (
+    <Radio.Group 
+      value={extractionMethod}
+      onChange={(e) => setExtractionMethod(e.target.value)}
+      className="mb-2"
+    >
+      <Radio.Button value="normal">Standard PDF Extraction</Radio.Button>
+      <Radio.Button value="ocr">Force OCR</Radio.Button>
+    </Radio.Group>
+  );
 
   const showEditModal = (assignment) => {
     setSelectedAssignment(assignment);
@@ -644,31 +734,38 @@ const ClassAssignments = () => {
               <Text type="secondary">{classData?.description}</Text>
             </div>
             
-            <Space>
-              <Button 
-                icon={<BarChartOutlined />}
-                onClick={handleNavigateToStats}
-                type="primary"
-                ghost
-              >
-                View Statistics
-              </Button>
-              <Button 
-                icon={<DownloadOutlined />}
-                onClick={exportGrades}
-                disabled={filteredAssignments.length === 0}
-              >
-                Export Grades
-              </Button>
-              <Upload {...uploadProps}>
+            <Space direction="vertical" align="end">
+              <Space>
                 <Button 
-                  type="primary" 
-                  icon={<UploadOutlined />}
-                  loading={uploading}
+                  icon={<BarChartOutlined />}
+                  onClick={handleNavigateToStats}
+                  type="primary"
+                  ghost
                 >
-                  Upload Assignment
+                  View Statistics
                 </Button>
-              </Upload>
+                <Button 
+                  icon={<DownloadOutlined />}
+                  onClick={exportGrades}
+                  disabled={filteredAssignments.length === 0}
+                >
+                  Export Grades
+                </Button>
+              </Space>
+              
+              {/* Add extraction method selector above upload button */}
+              <div className="text-right">
+                <ExtractionMethodSelector />
+                <Upload {...uploadProps}>
+                  <Button 
+                    type="primary" 
+                    icon={<UploadOutlined />}
+                    loading={uploading}
+                  >
+                    Upload Assignment
+                  </Button>
+                </Upload>
+              </div>
             </Space>
           </div>
 
@@ -998,6 +1095,16 @@ const ClassAssignments = () => {
 
           {/* Add the new Compare Modal */}
           {renderCompareModal()}
+
+          {/* Add OCR progress indicator */}
+          {ocrProgress > 0 && (
+            <div className="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg">
+              <div className="text-center">
+                <Text>Processing OCR</Text>
+                <Progress percent={ocrProgress} status="active" />
+              </div>
+            </div>
+          )}
         </div>
       </Content>
     </Layout>

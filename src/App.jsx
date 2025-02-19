@@ -9,7 +9,7 @@ import ClassAssignments from './pages/ClassAssignments';
 import SubmitAssignment from './pages/SubmitAssignment';
 import AccountManagement from './pages/AccountManagement';
 import ClassStatistics from './pages/ClassStatistics';
-
+import OCR from './pages/OCR';
 function App() {
   return (
     <Router>
@@ -35,6 +35,7 @@ function App() {
             </PrivateRoute>
           } />
           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="ocr" element={<OCR />} />
         </Routes>
       </AuthProvider>
     </Router>
